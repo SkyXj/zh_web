@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<!-- Use correct character set. -->
+	<meta charset="utf-8">
+	<!-- Tell IE to use the latest, best version. -->
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<!-- Make the application on mobile take up the full browser screen and disable user scaling. -->
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+	<title>Hello World!</title>
+
+	<script src="./js/jquery-1.11.1.min.js"></script>
+	<script src="./thirdparty/Cesium/Cesium.js"></script>
+	<!--<script src="http://map.polar-day.com/Cesium/Cesium.js"></script>-->
+	
+	<script src="./thirdparty/baidutile.js"></script>
+	<script src="./thirdparty/coordtransform.js"></script>
+	<script src="./thirdparty/angular.min.js"></script>
+	<script src="./thirdparty/jsColor.js"></script>
+	<script src="./thirdparty/html2canvas.min.js"></script>
+	<script src="./thirdparty/highcharts.js"></script>
+	<script src="./js/tools.js"></script>
+	<script src="./js/Base64.js"></script>
+	<script src="./js/main/config.js"></script>
+	<script src="./js/main/main_buttons.js"></script>
+	<script src="./js/main/context_menu.js"></script>
+	<script src="./js/main/main_panels.js"></script>
+	<script src="./js/main/main.js"></script>
+	<script src="./js/main/map.js"></script>
+	<script src="./js/main/drawer.js"></script>
+	<script src="./js/main/main_point_select.js"></script>
+	<script src="./js/main/main_area.js"></script>
+	<!--<script src="./thirdparty/ColorsPicker/colors.js"></script>
+	<script src="./thirdparty/ColorsPicker/colorPicker.data.js"></script>
+	<script src="./thirdparty/ColorsPicker/colorPicker.js"></script>
+	<script src="./thirdparty/ColorsPicker/jsColor.js"></script>-->
+
+	<style>
+		@import url(./thirdparty/Cesium/Widgets/widgets.css);
+		@import url(./css/index.css);
+		@import url(./css/dialog.css);
+		/*@import url(./thirdparty/ColorsPicker/jsColor.css);*/
+		html, body, #cesiumContainer {
+			width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
+		}
+		.cesium-viewer .cesium-widget-credits{
+			display: none;
+		}
+
+		/*.cesium-viewer-toolbar{
+			display: none;
+		}*/
+		/*.cesium-viewer-toolbar2{
+            display: none;
+        }
+        .cesium-viewer-animationContainer{
+            display: none;
+        }
+        .cesium-viewer-timelineContainer{
+            display: none;
+        }
+        .cesium-viewer-fullscreenContainer{
+            visibility: hidden;
+        }
+        .cesium-navigation-help{
+            visibility: hidden;
+        }*/
+		.input_container{
+			position: fixed;
+			left:0;
+			top:0;
+			background: #fff;
+			border: 1px solid #ccc;
+			display: none;
+		}
+		#data{
+			width: 300px;
+			height: 380px;
+			resize: none;
+			outline: none;
+			border-bottom: 1px solid #ccc;
+		}
+		.btn_render{
+			width: 80px;
+			/* height: 20px; */
+			margin: 5px auto 5px auto;
+			color: #fff;
+			background: #195bf5;
+			line-height: 20px;
+			text-align: center;
+			padding: 5px 0;
+			border-radius: 4px;
+		}
+		.btn_render:hover{
+			background: #195bff;
+			cursor: pointer;
+		}
+		.map_button_container{
+			position: fixed;
+			right: 10px;
+			top: 10px;
+		}
+		.map_button{
+			/*padding: 2px;
+			background: rgba(255,255,255, 0.9);
+			border-radius: 5px;*/
+			margin-left: 0px;
+			opacity: 0.98;
+		}
+		.map_button p{
+			width: 46px;
+			height: 46px;
+			margin: 0;
+		}
+		.map_button:hover{
+			opacity: 1.0;
+			transition: 0.1s;
+		}
+		.btn_refresh{
+			background:url(images/operate.png) no-repeat -48px -72px;
+		}
+		.btn_chart{
+			background: url(images/chart.png) no-repeat;
+		}
+		.btn_settings{
+			background:url(images/settings.png) no-repeat 0px 0;
+		}
+		.btn_statistic {
+			background:url(images/statistic.png) no-repeat 0px 0;
+		}
+		.btn_fitView{
+			background: url(images/eye.png) no-repeat 0 0px;
+			/*background-size: 24px 16px;*/
+		}
+		.btn_save {
+			background: url(images/save.png) no-repeat;
+		}
+		.btn_color{
+			background: url(images/color.png) no-repeat;
+		}
+		.btn_clear{
+			background: url(images/clear.png) no-repeat;
+		}
+		.btn_fullscreen{
+			background: url(images/fullscreen.png) no-repeat;
+		}
+		.btn_fullscreen.full{
+			background: url(images/fullscreen2.png) no-repeat;
+		}
+
+
+		.btn {
+			color: #fff;
+			padding: 5px 20px;
+			background: #448aff;
+			border-radius: 2px;
+		}
+		.btn.disabled{
+			color: #fff;
+			background: #cdcdcd;
+		}
+
+		.mouse_lng_lat{
+			position: fixed;
+			left: 0;
+			top: 0;
+			color: #FF0000;
+			background: rgba(244,244,244,0.6);
+		}
+
+	</style>
+</head>
+<body ng-app="map" ng-controller="all">
+<div id="cesiumContainer" ng-right-click="rightClickMap($event);"></div>
+<div class="input_container">
+	<textarea id="data"></textarea>
+	<p class="btn_render">绘制</p>
+</div>
+<div class="map_button_container flex-line">
+	<div class="settings map_button  ng-hide" title="测试" ng-show="false">
+		<p class="btn_refresh" ng-click="clickTest($event)"></p>
+	</div>
+	<div class="settings map_button ng-hide" title="刷新图形" ng-show="false">
+		<p class="btn_refresh" ng-click="clickRefresh($event)"></p>
+	</div>
+	<div class="settings map_button" title="设置" ng-show="true">
+		<p class="btn_settings" ng-click="clickSettings($event)"></p>
+	</div>
+	<div class="settings map_button ng-hide" title="选点对比" ng-show="false">
+		<p class="btn_statistic" ng-click="clickStatistic($event)"></p>
+	</div>
+	<div class="settings map_button" title="图形">
+		<p class="btn_chart" ng-click="clickShape($event)"></p>
+	</div>
+	<div class="settings map_button" title="颜色设定" ng-show="settings.area[area].material!=undefined">
+		<p class="btn_color" ng-click="clickColorSettings($event)"></p>
+	</div>
+	<div class="settings map_button" title="最佳视角" ng-show="true">
+		<p class="btn_fitView" ng-click="clickFitView($event)"></p>
+	</div>
+	<div class="settings map_button" title="保存">
+		<p class="btn_save" ng-click="clickSave($event)"></p>
+	</div>
+	<div class="settings map_button" title="清空">
+		<p class="btn_clear" ng-click="clickClear($event)"></p>
+	</div>
+	<div class="settings map_button" title="{{full_screen?'退出全屏':'全屏'}}">
+		<p class="btn_fullscreen {{full_screen?'full':''}}" ng-click="clickFullScreen($event)"></p>
+	</div>
+</div>
+
+<div class="shape panel right flex-line ng-hide" ng-show="settings.area[area].panel.shape_show" style="margin-right:{{shape_expand?0:-430}}px;">
+	<div class="expand_btn" ng-click="shape_expand=!shape_expand">
+		<img ng-src="{{shape_expand?'images/expand_right.png':'images/expand_left.png'}}" />
+	</div>
+	<div class="main space">
+		<div class="bk_border">
+			<div class="top"></div>
+			<div class="mid"></div>
+			<div class="bottom"></div>
+		</div>
+		<div class="flex-line" style="margin: 10px 0 0px 20px;">
+			<input type="checkbox" ng-model="shape_all"/>
+			<p>全选</p>
+		</div>
+		<div class="table">
+			<div class="flex-line head">
+				<div class="shape_name first" ><p>名称</p></div>
+				<div class="shape_angle first"><p>偏移角度</p></div>
+				<div class="shape_distance first"><p>偏移距离(m)</p></div>
+				<div class="shape_op first space"></div>
+			</div>
+			<ul >
+				<li class="flex-line item" ng-repeat="item in shape" ng-dblclick="viewShape(item)">
+					<div class="shape_name flex-line" title="{{item.name}}">
+						<input type="checkbox" ng-model="item.show"/>
+						<p class="text-ellipsis" ng-bind="item.name" title="{{item.name}}"></p>
+					</div>
+					<div class="shape_angle"><input ng-model="item.angle" type="number" min="0" max="360" placeholder=""/></div>
+					<div class="shape_distance"><input ng-model="item.distance" type="number" min="-6378137" max="6378137" placeholder=""/></div>
+					<div class="shape_op space"><p class="btn" ng-click="clickShapeOffset(item);">设置</p></div>
+					<div class="shape_op space"><p class="btn" ng-click="clickShapeRemove(item);">删除</p></div>
+				</li>
+			</ul>
+		</div>
+		
+		<div id="mytest">
+			
+		</div>
+
+
+	</div>
+</div>
+<div class="area panel ng-hide" ng-show="settings.area[area].panel.area_show">
+	<div class="btn_area select" ng-click="clickAreaSelect()" title="区域选择工具"></div>
+	<div class="btn_area remove" ng-click="clickAreaSelectForRemove()" title="删除区域"></div>
+</div>
+<div class="error panel left flex-line ng-hide" ng-show="settings.area[area].panel.error_show" style="{{error_z_index?('z-index:'+error_z_index):''}};margin-left:{{error_expand?0:-390}}px;">
+	<div class="space" style="margin-top: -160px; height: 100%;">
+		<div class="tab_title flex-line" style="">
+			<p class="btn tab {{error_tab==1?'':'nosel'}}" ng-click="error_tab=1">异常点</p>
+			<p class="btn tab {{error_tab==2?'':'nosel'}}" ng-click="error_tab=2">异常信息</p>
+		</div>
+		<div class="main" ng-switch="error_tab">
+			<div class="bk_border">
+				<div class="top"></div>
+				<div class="mid"></div>
+				<div class="bottom"></div>
+			</div>
+			<div ng-switch-when="2" class="info">
+				<div ng-repeat="item in panel.error.info">
+					<p class="dot_blue" ng-bind="item.title"></p>
+					<p><span class="text-pre-space"></span>{{item.text}}</p>
+				</div>
+			</div>
+			<table ng-switch-when="1">
+				<thead>
+				<tr>
+					<th width="160">物质名称</th>
+					<th width="60">浓度</th>
+					<th width="140">坐标</th>
+				</tr>
+				</thead>
+				<tbody>
+				<tr ng-repeat="item in panel.error.point" ng-dblclick="dblClickError(item)">
+					<td>
+						<div class="flex-line">
+							<div class="icon" style="{{'background:#'+item.colorString}}"></div>
+							<p>{{item.name}}</p>
+						</div>
+					</td>
+					<td ng-bind="item.value" style="{{'padding: 5px;'+(item.sel?'font-weight:bold;':'color:#ccc')}}"></td>
+					<td ng-bind="item.pos_show"></td>
+				</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+	<div class="expand_btn" ng-click="error_expand=!error_expand;error_z_index=error_expand?999:998;statistic_z_index=error_expand?998:999">
+		<img ng-src="{{error_expand?'images/expand_left.png':'images/expand_right.png'}}" />
+	</div>
+</div>
+<div class="statistic panel left flex-line ng-hide" ng-show="settings.area[area].panel.statistic_show" style="{{statistic_z_index?('z-index:'+statistic_z_index):''}};margin-left:{{statistic_expand?0:-390}}px;">
+	<div class="space" style="margin-top: -210px;">
+		<div class="flex-line" style="">
+			<p class="btn tab {{statistic_tab==1?'':'nosel'}}" ng-click="statistic_tab=1">柱状图</p>
+			<p class="btn tab {{statistic_tab==2?'':'nosel'}}" ng-click="statistic_tab=2">饼状图</p>
+		</div>
+		<div class="main">
+			<div class="bk_border">
+					<div class="top"></div>
+					<div class="mid"></div>
+					<div class="bottom"></div>
+			</div>
+			<div class="ng-hide" ng-show="statistic_tab==1">
+				<div class="flex-line op">
+					<p class="btn" ng-click="chart.clickSelect()">选点</p>
+					<p class="btn {{chart.selection.length > 0?'':'disabled'}}" ng-click="chart.clickRemove()">删除(<span>{{chart.selection.length > 0?(chart.selection.length):'单击列头选中'}}</span>)</p>
+					<p class="space"></p>
+					<p style="position: relative;top: 30px;">(单位：ug/m<sup>3</sup>)</p>
+				</div>
+				<p class="dot_blue" style="margin: 5px 0 0 0">列表</p>
+				<div class="point_list" style="max-width: 380px;" ng-show="chart.points.length>0" ha="{{chart.materials.length}}">
+					<table>
+						<thead>
+						<tr>
+							<th height="40" style="position: relative;min-width: 140px;background: url(./images/table_head_bk.png) no-repeat;background-size:140px 40px">
+								<p style="position: absolute;bottom:2px; left: 10px">物质</p>
+								<p style="position: absolute;top:20px;right: 15px;">浓度</p>
+								<p style="position: absolute;top:2px;right:2px;">点</p>
+							</th>
+							<th ng-repeat="point in chart.points" class="point {{point.sel?'selected':''}}" ng-click="chart.clickList(point);">
+								<p style="min-width: 60px"><span class="chart_point_nav" ng-dblclick="chart.dblClickPoint(point)">点{{$index+1}}</span></p>
+							</th>
+						</tr>
+						</thead>
+						<tbody>
+						<tr ng-repeat="item in chart.materials" >
+							<td title="{{item}}"><span class="text-ellipsis">{{item}}</span></td>
+							<td class="point_val {{point.sel?'selected':''}}" style="{{'padding: 2px;5px'+(item.sel?'font-weight:bold;':'color:#ccc')}}" ng-repeat="point in chart.points">
+								<p>{{point.val_show[$parent.item]}}</p>
+							</td>
+						</tr>
+						</tbody>
+					</table>
+				</div>
+				<div class="flex-line">
+					<p class="dot_blue" style="margin: 5px 0 0 0">柱状图</p>
+					<p class="space"></p>
+					<p class="btn_export" ng-show="chart.points.length > 0" ng-click="chart.exportBar()">导出数据</p>
+				</div>
+				<div ng-show="chart.points.length>0" style="overflow: auto;height: 230px;max-width: 380px;">
+					<div id="chart1" style="{{'width: '+chart.bar_width+'px;height: 223px;'}}">
+
+					</div>
+				</div>
+
+			</div>
+			<div class="ng-hide" ng-show="statistic_tab==2">
+				<div class="flex-line op">
+					<p class="btn" ng-click="chart.clickSelect()">选点</p>
+					<p class="btn ng-hide {{chart.selection.length > 0?'':'disabled'}}" ng-click="chart.clickRemove()">删除<span>{{chart.selection.length > 0?('('+chart.selection.length+')'):''}}</span></p>
+					<p class="space"></p>
+					<p style="position: relative;top: 30px;">(单位：ug/m<sup>3</sup>)</p>
+				</div>
+				<p class="dot_blue" style="margin: 5px 0 0 0">列表</p>
+				<div class="point_list" ng-show="chart.materials2.length > 0">
+					<table>
+						<thead>
+						<tr>
+							<th style="position: relative;min-width: 140px;">物质</th>
+							<th style="position: relative;min-width: 100px;">浓度</th>
+							<th style="position: relative;min-width: 120px;">百分比</th>
+						</tr>
+						</thead>
+						<tbody>
+						<tr ng-repeat="item in chart.materials2" >
+							<td title="{{item}}"><span class="text-ellipsis">{{item}}</span></td>
+							<td style="{{'padding: 2px;5px'+(item.sel?'font-weight:bold;':'color:#ccc')}}">
+								{{chart.points2[0].val[item]}}
+							</td>
+							<td>{{chart.points2[0].val_percent[item]+'%'}}</td>
+						</tr>
+						</tbody>
+					</table>
+				</div>
+				<div class="flex-line">
+					<p class="dot_blue" style="margin: 5px 0 0 0">饼状图</p>
+					<p class="space"></p>
+					<p class="btn_export" ng-show="chart.points2.length > 0" ng-click="chart.exportPie()">导出数据</p>
+				</div>
+				<div style="overflow: auto;height: 230px;max-width: 380px;">
+					<div id="chart2" style="width: 380px;height: 223px;">
+
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="expand_btn" ng-click="statistic_expand=!statistic_expand;error_z_index=statistic_expand?998:999;statistic_z_index=statistic_expand?999:999">
+		<img ng-src="{{statistic_expand?'images/expand_left.png':'images/expand_right.png'}}" />
+	</div>
+</div>
+<div class="materials_color all ng-hide" ng-show="materials_color_all_show">
+	<div class="flex-line">
+		<p class="dot_blue">物质名称</p>
+		<p class="space"></p>
+		<div class="hide" ng-click="materials_color_show=!materials_color_show">
+			<img ng-src="{{materials_color_show?'images/down.png':'images/up.png'}}" />
+		</div>
+
+	</div>
+	<ul class="list ng-hide" ng-show="materials_color_show">
+		<li class="flex-line" ng-repeat="m in settings.area[area].material" ng-show="m.has&&m.show">
+			<div class="icon" style="{{'background:#'+m.colorString}}"></div>
+			<p class="text-ellipsis" title="{{m.name}}">{{m.name}}</p>
+		</li>
+	</ul>
+</div>
+<div class="materials_color single  ng-hide" ng-show="materials_color_single_show">
+	<div class="flex-line">
+		<p class="dot_blue">浓度(ug/m<span class="uptop">3</span>)</p>
+	</div>
+	<ul class="list ng-hide" ng-show="true">
+		<li class="flex-line" ng-repeat="m in settings.area[area].material_single.color.slice().reverse()">
+			<div class="icon" style="{{'background:#'+m.colorString}}"></div>
+			<p class="text-ellipsis">{{m.val}}</p>
+			<p>-</p>
+			<p class="text-ellipsis">{{$index==0?"∞":settings.area[area].material_single.color.slice().reverse()[$index-1].val}}</p>
+			<p class="space"></p>
+		</li>
+	</ul>
+</div>
+<div class="panel_template point_info ng-hide" ng-show="panel.point_show" style="{{'left:'+panel.point_x+'px;top:'+panel.point_y+'px;'}}">
+	<p class="dot_blue">坐标 X:<span>{{panel.point_mouse_x}}</span> Y:<span>{{panel.point_mouse_y}}</span></p>
+	<p class="dot_blue">时间: <span>{{panel.point_time}}</span></p>
+	<table>
+		<thead>
+		<tr>
+			<th>物质名称</th>
+			<th>浓度</th>
+		</tr>
+		</thead>
+		<tbody>
+			<tr ng-repeat="item in panel.point_item">
+				<td width="120px" style="{{'padding: 5px;'+(item.sel?'font-weight:bold;':'color:#ccc')}}">
+					<div class="flex-line">
+						<div class="icon" style="{{'background:#'+item.colorString}}"></div>
+						<p>{{item.name}}</p>
+					</div>
+				</td>
+				<td width="80px" style="{{'padding: 5px;'+(item.sel?'font-weight:bold;':'color:#ccc')}}">{{item.value.toFixed(5)}}</td>
+			</tr>
+		</tbody>
+	</table>
+</div>
+<div class="panel_template factory_info ng-hide" ng-show="panel.factory_show" style="{{'left:'+panel.factory_x+'px;top:'+panel.factory_y+'px;'}}">
+	<p class="dot_blue">工厂基本信息</p>
+	<div class="item flex-line">
+		<p class="title">工厂名称:</p>
+		<p class="content">{{panel.factory_cur.name}}</p>
+	</div>
+	<div class="item flex-line">
+			<p class="title">行业类别:</p>
+			<p class="content">{{panel.factory_cur.industry}}</p>
+	</div>
+	<div class="item flex-line">
+			<p class="title">法人代表:</p>
+			<p class="content">{{panel.factory_cur.representative}}</p>
+	</div>
+	<div class="item flex-line">
+			<p class="title">联系人:</p>
+			<p class="content">{{panel.factory_cur.contact}}</p>
+	</div>
+	<div class="item flex-line">
+			<p class="title">联系方式:</p>
+			<p class="content">{{panel.factory_cur.tel}}</p>
+	</div>
+	<div class="item flex-line">
+			<p class="title">主要产品:</p>
+			<p class="content">{{panel.factory_cur.product}}</p>
+	</div>
+	<div class="item flex-line">
+			<p class="title">地址:</p>
+			<p class="content">{{panel.factory_cur.address}}</p>
+	</div>
+	<div class="item flex-line">
+			<p class="title">经度:</p>
+			<p class="content">{{panel.factory_cur.lng}}</p>
+	</div>
+	<div class="item flex-line">
+			<p class="title">纬度:</p>
+			<p class="content">{{panel.factory_cur.lat}}</p>
+	</div>
+	<p class="dot_blue">物质信息</p>
+	<p class="material">{{panel.factory_cur.material}}</p>
+</div>
+<div class="panel_template wind_info ng-hide" ng-show="panel.wind_show" style="{{'left:'+panel.wind_x+'px;top:'+panel.wind_y+'px;'}}">
+	<p>风向：<span>{{panel.wind_direction}}度</span></p>
+	<p>风速：<span>{{panel.wind_speed}}</span>米/秒</p>
+</div>
+<div class="dialog_bk ng-hide" ng-show="dialog.show">
+	<div class="dialog" style="{{'width:'+dialog.width+'px;left:calc(50% - '+dialog.width/2+'px);height:'+dialog.height+'px;top:calc(50% - '+dialog.height/2+'px);'}}">
+		<div class="dialog_title flex-line">
+			<img class="icon" ng-src="{{dialog.icon}}" />
+			<p class="space" ng-bind="dialog.title"></p>
+			<img class="dialog_close" src="images/close2.png" ng-click="clickDialogClose()"/>
+		</div>
+		<iframe ng-src="{{dialog.src}}" style="{{'height:'+(dialog.height-34)+'px'}}"></iframe>
+	</div>
+</div>
+<div class="select_point ng-hide" ng-show="chart.show_selection" ng-mousemove="chart.mousemove($event)" ng-click="chart.clickMask($event);" ng-dblclick="chart.dblClickMask($event);">
+
+</div>
+<div class="select_area ng-hide" ng-show="area_select.show_selection" ng-mousedown="area_select.mousedown($event)"
+	 ng-mousemove="area_select.mousemove($event)" ng-mouseup="area_select.mouseup($event)" ng-click="area_select.click($event)">
+	<div class="mask" style="border: 1px solid #fff;position: absolute;left:{{area_select.select.x}}px;top:{{area_select.select.y}}px;width:{{area_select.select.width}}px;height:{{area_select.select.height}}px;"></div>
+</div>
+<div class="mouse_lng_lat ng-hide" ng-show="mouse_lng_lat">
+	<p ng-bind="mouse_lng_lat.lng"></p>
+	<p ng-bind="mouse_lng_lat.lat"></p>
+	<p ng-bind="mouse_lng_lat.height"></p>
+	<p ng-bind="mouse_lng_lat2.lng"></p>
+	<p ng-bind="mouse_lng_lat2.lat"></p>
+	<p ng-bind="mouse_lng_lat2.height"></p>
+</div>
+
+<script>
+	$(document).ready(function () {
+		if (false){
+			var viewer = new Cesium.Viewer('cesiumContainer');
+			/*
+			var viewer = new Cesium.Viewer('cesiumContainer',{
+				baseLayerPicker:false,
+				timeline:false,
+				homeButton:false,//归位
+				fullscreenButton:false,
+				scene3DOnly: true,
+				sceneMode : Cesium.SceneMode.SCENE3D,
+				sceneModePicker:false, //2D 3D切换
+				infoBox:false,
+				navigationInstructionsInitiallyVisible:false,
+				navigationHelpButton:false,
+				geocoder:false,
+				shouldAnimate:true,
+				animation: false,
+				selectionIndicator:false, //是否显示选中地图元素标识控件
+				//projectionPicker: true
+				//imageryProvider : $scope.settings.sources[0].provider[0]//mapbox//providerImage
+    		});*/
+            var instance = new Cesium.GeometryInstance({
+                geometry: new Cesium.CircleGeometry({
+                    ellipsoid : Cesium.Ellipsoid.WGS84,
+                    center : Cesium.Cartesian3.fromDegrees(116.38, 39.90),
+                    radius: 1000,
+                    height : 0,
+                    extrudedHeight: 1000
+                }),
+                id: 'test',
+                attributes: {
+                    color: Cesium.ColorGeometryInstanceAttribute.fromColor(Cesium.Color.fromCssColorString('#f00'))
+                }
+            });
+            var primitive = new Cesium.Primitive({
+                geometryInstances: [instance],
+                allowPicking: true,
+                appearance: new Cesium.PerInstanceColorAppearance({
+                    flat: true,
+                    translucent: true,
+                    faceForward: true
+                })
+            });
+            viewer.scene.primitives.add(primitive);
+        }
+		
+	})
+</script>
+</body>
+</html>

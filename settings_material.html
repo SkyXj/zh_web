@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<!-- Use correct character set. -->
+	<meta charset="utf-8">
+	<!-- Tell IE to use the latest, best version. -->
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<!-- Make the application on mobile take up the full browser screen and disable user scaling. -->
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+	<title>Hello World!</title>
+	<script src="./js/jquery-1.11.1.min.js"></script>
+	<script src="./thirdparty/angular.min.js"></script>
+	<script src="./thirdparty/jsColor.js"></script>
+	<script src="./js/tools.js"></script>
+	<script src="./js/main/config.js"></script>
+
+	<style>
+		@import url(./css/index.css);
+		@import url(./css/dialog.css);
+		body{
+			overflow: hidden;
+		}
+		.btn{
+			color: #fff;
+			padding: 5px 20px;
+			background: #448aff;
+			border-radius: 4px;
+		}
+		.btn:hover{
+			background: #3777e4;
+		}
+		.color_settings .content{
+			position: absolute;
+			top: 35px;
+			left: 0;
+			right: 0;
+			bottom: 65px;
+			overflow-y: auto;
+			padding: 0 10px;
+			border: 1px solid #B5ACAC;
+			margin: 0 10px;
+		}
+		.set_alpha{
+			position: absolute;
+			top: 10px;
+			right: 10px;
+		}
+		.set_color_level{
+			position: absolute;
+			bottom: 40px;
+			align-items: baseline;
+		}
+		.color_settings{
+			padding: 12px;
+			color: #1a1f27;
+			font-size: 12px;
+		}
+		.color_settings .btn_OK{
+			position: absolute;
+			right: 10px;
+			bottom: 5px;
+		}
+		.color_settings .material{
+			padding: 5px 0;
+		}
+		.color_settings .title{
+			font-size: 12px;
+			color: #333;
+		}
+		.color_settings .color{
+			width: 80px;
+			height: 20px;
+			border: 1px solid #aaa;
+			padding: 0 5px;
+		}
+		.color{
+			text-align: center;
+		}
+		.color_settings_mask{
+			background-color: rgba(0,0,0,0.8);
+			position: fixed;
+			left:0;right: 0;bottom: 0;top:0;
+		}
+		.material, .color_level{
+			border-bottom: solid 1px #eeeeee;
+		}
+		.material_sel{
+			margin-right: 5px;
+			zoom:150%;
+		}
+		.set_color_level .color{
+			width: 55px;
+		}
+		.input_alpha{
+			border: 1px solid #aaa;
+			margin: 0 2px 0 10px;
+			width: 30px;
+		}
+		.single_val_input{
+			width: 50px;
+			text-align: center;
+		}
+		.material_single_panel{
+			position: fixed;
+			right: 1px;
+			bottom: 1px;
+			width: 100px;
+			background: rgba(128,128,128,0.9);
+			padding: 5px;
+		}
+		.material_single_panel .title_start {
+			width: 60px;
+			text-align: right;
+			margin-right: 2px;
+		}
+		.material_single_panel .title_end {
+			width: 60px;
+			text-align: left;
+			margin-left: 2px;
+		}
+		.material_single_panel .show_color {
+			width: 50px;
+			height: 20px;
+		}
+		/*********************************/
+		.btn_single{
+			color:rgb(73,138,242);
+		}
+		.btn_single:hover{
+			text-decoration: underline;
+			cursor: pointer;
+		}
+		.dlg_color_level input{
+			width: 60px;
+			margin: 5px 10px;
+			text-align: center;
+			border-radius: 2px;
+			border: 1px solid #ddd;
+			height: 22px;
+		}
+		.dlg_color_level .color{
+			border: 1px solid #aaa;
+		}
+		.dlg_color_level .list{
+			position: absolute;
+			width: calc(100% - 20px);
+			bottom: 30px;
+			top: 40px;
+			border: 1px solid #aaa;
+			margin: 10px;
+			overflow: auto;
+		}
+		.dlg_color_level .op{
+			position: absolute;
+			bottom: 5px;
+			width: calc(100% - 20px);
+			margin: 0 10px;
+		}
+		.dlg_color_level .btn{
+			margin-left: 10px;
+		}
+	</style>
+</head>
+<body ng-app="settings" ng-controller="all">
+<div class="color_settings" >
+	<div class="flex-line" style="padding: 0 10px"><input class="material_sel all_sel" ng-model="material_all" type="checkbox" /><p>全选</p></div>
+	<div class="content">
+		<ul >
+			<li ng-repeat="item in settings.area[area].material" class="material flex-line" ng-show="item.has">
+				<input class="material_sel" type="checkbox" ng-disabled="item.has==false" ng-model="item.show"/>
+				<p class="title space" ng-bind="item.name"></p>
+				<input class="color" ng-model="item.colorString" />
+			</li>
+		</ul>
+	</div>
+
+	<div class="set_color_level" style="margin-left: 10px">
+		<div class="flex-line">
+			<input class="material_sel" type="checkbox" ng-model="settings.area[area].material_single.show"/>
+			<p class="btn_single" style="margin-right: 5px" ng-click="clickSingle();">单种物质时浓度与颜色对应</p>
+		</div>
+	</div>
+	<div class="flex-line set_alpha">
+		<p>透明度:</p>
+		<input type="number" min="10" max="100" class="input_alpha single_val_input" ng-model="settings.area[area].alpha"/>
+		<p>%</p>
+	</div>
+	<p class="btn btn_OK" ng-click="clickColorOK($event)">确定</p>
+</div>
+<div class="dialog_bk ng-hide dlg_color_level" ng-show="dialog.show">
+	<div class="dialog" style="{{'width:'+dialog.width+'px;left:calc(50% - '+dialog.width/2+'px);height:'+dialog.height+'px;top:calc(50% - '+dialog.height/2+'px);'}}">
+		<div class="dialog_title flex-line">
+			<img class="icon" ng-src="{{dialog.icon}}" />
+			<p class="space" ng-bind="dialog.title"></p>
+			<img class="dialog_close" src="images/close2.png" ng-click="clickDialogClose()"/>
+		</div>
+		<div style="{{'height:'+(dialog.height-34)+'px'}}">
+			<ul class="list">
+				<li class="flex-line color_level" ng-repeat="level in color">
+					<input type="number" ng-model="level.val" ng-disabled="$index==0"/>
+					<p>-</p>
+					<input disabled="disabled" value="{{$index<color.length-1?color[$index+1].val:'∞'}}"/>
+					<div class="space"></div>
+					<input class="color {valueElement:null}" ng-model="level.colorString" style="font-size: 10px"/>
+				</li>
+			</ul>
+			<div class="op flex-line">
+				<div class="space"></div>
+				<p class="btn btn_add" ng-click="clickAdd();">增加</p>
+				<p class="btn btn_del" ng-click="clickDel();">减少</p>
+				<p class="btn btn_ok" ng-click="clickColorLevelOK();">确定</p>
+			</div>
+		</div>
+	</div>
+</div>
+<script>
+	function init(settings) {
+
+	}
+	var app = angular.module('settings', []);
+	app.controller('all', function ($scope){
+		$scope.PDConfig = PDConfig;
+		if (PDTools.getQuery(window.location.href, 'area') == '1')
+			$scope.area = 1;
+		else
+			$scope.area = 0;
+
+		$scope.dialog = {show: false};
+
+		$scope.settings = PDCommon.getData('settings');
+		$scope.settings = PDConfig.default($scope.settings, $scope.area);
+
+		$scope.color = PDTools.clone($scope.settings.area[$scope.area].material_single.color);
+
+		openColorsSelector($scope);
+		$scope.$watch('material_all', function (val, valOld, $scope) {
+			if (val == undefined) return;
+			var area = $scope.area;
+			if ($scope.settings.area[area].material) {
+				for (var i in $scope.settings.area[area].material) {
+					if ($scope.settings.area[area].material[i].has != false)
+						$scope.settings.area[area].material[i].show = val;
+				}
+			}
+		});
+		$scope.clickColorOK = function () {
+			var alpha = $scope.settings.area[$scope.area].alpha;
+			if (alpha == undefined || alpha < 10 || alpha > 100){
+				PDTools.notify('透明度必须在10~100之间');
+				return;
+			}
+			var material = $scope.settings.area[$scope.area].material;
+			var count = 0;
+			var count_has = 0;
+			for (var i = 0; i < material.length; i ++){
+				var m = material[i];
+				if (m.has != false && m.show){
+					count ++;
+				}
+				if (m.has != false)
+					count_has ++;
+			}
+
+			if (count_has > 0 && count == 0){
+				PDTools.notify('至少选择一种物质显示');
+				return;
+			}
+
+			$scope.settings.area[$scope.area].material_count = count;
+
+			for (var i = 0; i < material.length; i ++){
+				material[i].color = parseInt(material[i].colorString, 16);
+			}
+			var settings = {area: []};
+			settings.area[$scope.area] = {
+				material: $scope.settings.area[$scope.area].material,
+				material_single: $scope.settings.area[$scope.area].material_single,
+				alpha: $scope.settings.area[$scope.area].alpha
+			}
+			window.parent.onColorChange(settings);
+			window.parent.onCloseDialog();
+		}
+		$scope.clickSingle = function () {
+			$scope.dialog = {
+				show: true,
+				icon: 'images/color2.png',
+				title: '单种物质时浓度与颜色对应',
+				width: 400,
+				height: 350
+			};
+			openColorsSelector();
+		}
+		$scope.clickAdd = function () {
+			var max = 1000;
+			var len = $scope.color.length;
+			if (len > 0)
+					max = $scope.color[len - 1].val + 100;
+			$scope.color.push({val:max,colorString:'FF0000', color:0xff0000});
+			openColorsSelector();
+		}
+		$scope.clickDel = function () {
+			var len = $scope.color.length;
+			if (len == 1){
+				PDTools.notify('至少保留一个');
+				return;
+			}
+			if (len > 0)
+				$scope.color.splice(len-1, 1);
+		}
+		$scope.clickColorLevelOK = function () {
+			var color = $scope.color;
+			for (var i = 1; i < color.length; i ++){
+				if (color[i].val <= color[i - 1].val){
+					PDTools.notify(color[i].val+'填写不正确。浓度值应该是从小到大！');
+					return;
+				}
+			}
+			for (var i = 0; i < color.length; i ++){
+				color[i].color = parseInt(color[i].colorString, 16);
+			}
+			$scope.settings.area[$scope.area].material_single.color = PDTools.clone(color);
+			$scope.dialog.show = false;
+		}
+		$scope.clickDialogClose = function () {
+			$scope.dialog.show = false;
+			$scope.color = PDTools.clone($scope.settings.area[$scope.area].material_single.color);
+		}
+		function openColorsSelector($scope) {
+			setTimeout(function () { //在angulajs里执行会有问题，所以放到timer里去执行
+				$('.color').each(function () {
+					var input = new jscolor(this);
+					//input.fromString('#f00');
+				});
+			}, 200);
+		}
+	});
+</script>
+</body>
+</html>

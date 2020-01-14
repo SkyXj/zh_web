@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<!-- Use correct character set. -->
+	<meta charset="utf-8">
+	<!-- Tell IE to use the latest, best version. -->
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<!-- Make the application on mobile take up the full browser screen and disable user scaling. -->
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+	<title>Hello World!</title>
+
+	<script src="./js/jquery-1.11.1.min.js"></script>
+	<script src="./thirdparty/angular.min.js"></script>
+	<script src="./js/tools.js"></script>
+
+	<style>
+		@import url(./css/index.css);
+		/*@import url(./thirdparty/ColorsPicker/jsColor.css);*/
+		html, body, #cesiumContainer {
+			width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
+		}
+		.container{
+			position: absolute;
+			top:0;
+			bottom: 0;
+			left: 0;
+			right: 0;
+			display: flex;
+		}
+		.hide{
+			display: none;
+		}
+		.if_container{
+			height: 100%;
+		}
+		.if_main1{
+			left: 0;
+			width: calc(50% - 2px);
+		}
+		.if_main2 {
+			flex-grow: 1;
+		}
+		.split{
+
+			width: 2px;
+			background: #ccc;
+			border-left: 1px solid #ccc;
+			border-right: 1px solid #ccc;
+			box-sizing: border-box;
+		}
+		.split:hover{
+			background: #eee;
+			cursor: col-resize;
+		}
+
+
+		iframe{
+			width: 100%;
+			height: 100%;
+			border: 0;
+		}
+		.splitter_bk{
+			position: fixed;
+			left:0;
+			top:0;
+			right: 0;
+			bottom: 0;
+			background: rgba(255,255,255,0.3);
+			display: none;
+		}
+		.splitter_bk:hover{
+			cursor: col-resize;
+			cursor: col-resize;
+		}
+		.splitter{
+			position: fixed;
+			background: rgba(200, 0, 0, 0.5);
+			opacity: 0.6;
+			border-left: 1px dotted #C77E7E;
+			border-right: 1px dotted #C77E7E;
+
+		}
+		.splitter:hover{
+			cursor: col-resize;
+		}
+	</style>
+</head>
+<body ng-app="container" ng-controller="all">
+<div class="container">
+	<div class="if_container if_main1 {{full_flag==2?'hide':''}}" style="{{full_flag == 1?'flex-grow:1':''}}">
+		<iframe ng-src="{{url1}}"></iframe>
+	</div>
+	<div class="split  {{full_flag!=0?'hide':''}}"></div>
+	<div class="if_container if_main2  {{full_flag==1?'hide':''}}">
+		<iframe ng-src="{{url2}}"></iframe>
+	</div>
+</div>
+<div class="splitter_bk">
+<div class="splitter"></div>
+</div>
+
+<script>
+	function onCloseMainWindow() {
+		//alert('123');
+		//return;
+		var has = false;
+		if ($('.if_main2 iframe')[0].contentWindow.PDDrawer.hasNewData())
+				has = true;
+		if ($('.if_main1 iframe')[0].contentWindow.PDDrawer.hasNewData())
+			has = true;
+		if (has){
+			PDTools.showConfirm('有未保存的走航数据，需要关闭窗口吗？', function (ok) {
+				console.log(ok);
+				if (ok){
+					PDInterface.doAction("ExitApplication", {}, function () {});
+				}
+			})
+		}else{
+			PDInterface.doAction("ExitApplication", {}, function () {});
+		}
+	}
+	function AdapterOnCmd(cmd) {
+		$('.if_main2 iframe')[0].contentWindow.AdapterOnCmd(cmd);
+		if (cmd.cmd == 'Start'){
+			$('.if_main1 iframe')[0].contentWindow.AdapterOnCmd(cmd);
+		}
+	}
+	setTimeout(function (){
+		var data = PDCommon.getData('CmdCache');
+		if (!data || !data.length) data = [];
+		handle(0);
+		function handle(pos) {
+			if (pos >= data.length) return;
+			AdapterOnCmd(data[pos]);
+			setTimeout(function () {
+				handle(pos + 1);
+			}, 500);
+		}
+	}, 1000);
+
+	var win_size = {
+		left: {width:'calc(50% - 2px)'},
+		mid: {left:'calc(50% - 2px)'},
+		right: {width:'calc(50% - 2px)'}
+	}
+	function FullScreen(full, frame) {
+		var $scope = $('[ng-controller=all]').scope();
+		if ($('.if_main1 iframe')[0].contentWindow == frame){
+			if (full)
+				$scope.full_flag = 1;
+			else
+				$scope.full_flag = 0;
+		}else{
+			if (full)
+				$scope.full_flag = 2;
+			else
+				$scope.full_flag = 0;
+		}
+		$scope.$apply();
+	}
+	function GetIFramePos(iframe) {
+		var offset = {left: 0, top:0};
+		$('iframe').each(function () {
+			if (this.contentWindow == iframe){
+				offset = $(this).offset();
+			}
+		});
+		return offset;
+	}
+	$(document).ready(function () {
+		var el = $('.split');
+		var _drag = {};
+		_drag.left = 0; //拖动过的位置距离左边
+		_drag.maxLeft; //距离左边最大的距离
+		_drag.dragging = false; //是否拖动标志
+		var x = el.offset().left;
+		var start = $('.splitter').offset().left;
+		el.mousedown(function(e) {
+			_drag.dragging = true;
+			_drag.isDragged = true;
+			x = el.offset().left;
+			el[0].setCapture && el[0].setCapture();
+			show(true);
+			$(document).bind('mousemove', mouseMove).bind('mouseup', mouseUp);
+			return false;
+		});
+		function mouseMove(e) {
+			e = e || window.event;
+			if (_drag.dragging) {
+				moveBy(e.clientX - x);
+				x = e.clientX;
+				return false;
+			}
+		}
+		function mouseUp(e) {
+			_drag.dragging = false;
+			el[0].releaseCapture && el[0].releaseCapture();
+			e.cancelBubble = true;
+			show(false);
+			$(document).unbind('mousemove', mouseMove).unbind('mouseup', mouseUp);
+		}
+		function show(show) {
+			if (show) {
+				start = $('.if_main1').width();
+				console.log('show '+start);
+				$('.splitter').css({
+					left: $('.split').offset().left,
+					top: $('.split').offset().top,
+					width: $('.split').width(),
+					height: $('.split').height(),
+				})
+				$('.splitter_bk').show();
+			} else {
+				var off = $('.splitter').offset().left - start;
+				console.log('move: '+off);
+
+				var left = $('.if_main1').width() + off;
+
+				$('.if_main1').css({
+					"width": left
+				});
+
+				$('.splitter_bk').hide();
+			}
+		}
+		function moveBy(x) {
+
+			var left = $('.splitter').offset().left;
+			if (left + x < $(window).width() - 100 && left + x > 100){
+				$('.splitter').css({
+					left: left + x
+				})
+			}
+
+		}
+	})
+	var app = angular.module('container', []);
+	app.controller('all', function ($scope){
+		$scope.full_flag = 0;
+
+		//$scope.url1 = 'main.html?map=0&area=0';
+		//$scope.url2 = 'main.html?map=2&area=1';
+		//return;
+
+		var param = '';
+		var url = window.location.href;
+		var index = url.indexOf('?');
+		if (index > 0){
+			param = url.substring(index);
+			$scope.url1 = 'main.html'+param+'&area=0';
+			$scope.url2 = 'main.html'+param+'&area=1';
+		}else{
+			$scope.url1 = 'main.html?area=0';
+			$scope.url2 = 'main.html?area=1';
+		}
+	});
+</script>
+</body>
+</html>

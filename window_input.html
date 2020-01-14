@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>输入</title>
+		<link href="css/index.css" rel="stylesheet" />
+		<script type="text/javascript" src="js/jquery-1.11.1.min.js"></script>
+		<script type="text/javascript" src="js/jquery.md5.js"></script>
+		<script type="text/javascript" src="js/PDCloudNote.js"></script>
+		<script type="text/javascript" src="js/config.js"></script>
+		<script type="text/javascript" src="js/tools.js"></script>
+		<script type="text/javascript" src="js/title_bar.js"></script>
+		<script type="text/javascript" src="thirdparty/angular.min.js"></script>
+		<style>
+			.main{
+				position: fixed;
+				top: 0;left:0;right:0;bottom:0;
+				padding: 20px;
+			}
+			.title{
+				height: 24px;
+				line-height: 24px;
+				text-align: right;
+				width: 100%;
+			}
+			.text{
+				margin-left: 5px;
+				height: 20px;
+				width: 100%;
+			}
+
+			.btn{
+				color: #fff;
+				padding: 5px 20px;
+				background: #448aff;
+				border-radius: 4px;
+			}
+			.btn:hover{
+				background: #3777e4;
+			}
+			.block{
+				display: flex;
+				flex-direction: column;
+				align-items: flex-end;
+				justify-content: flex-start;
+			}
+			.item{
+				margin: 5px 0;
+				width: 100%;
+			}
+		</style>
+    </head>
+    
+    <body>
+	<div class="title_bar skin_normal2">
+		<img class="logo" src="images/logo2.png"/>
+		<div class="space"></div>
+		<div class="system_buttons">
+			<div class="btn_close grid_image no_caption skin_normal2"></div>
+		</div>
+	</div>
+	<div class="main" ng-app="inputs" ng-controller="inputs" >
+		<div style="display: flex;flex-direction: row">
+			<ul class="block">
+				<li class="flex-line item" ng-repeat="title in titles">
+					<p class="title">{{title}}</p>
+				</li>
+			</ul>
+			<ul class="block" style="flex-grow: 1">
+				<li class="flex-line item" ng-repeat="title in titles">
+					<input class="text space" type="{{$parent.types[$index]?$parent.types[$index]:'text'}}" ng-model="$parent.inputs[$index]"/>
+				</li>
+			</ul>
+		</div>
+
+		<div class="flex-line" style="margin-top: 20px">
+			<div class="space"></div>
+			<p class="btn ok" ng-click="clickOK()">确定</p>
+		</div>
+	</div>
+
+	</form>
+
+<script>
+	var titles = [];
+	var inputs = [];
+	var types = [];
+	var out_string = false;
+
+	var fun_callback = function () {};
+	function init(title, input, type, fun) {
+		if (typeof input == 'undefined'){
+			PDInterface.alert('pram error');
+			return;
+		} else if (typeof type == 'undefined') {
+			fun = input;
+			input = [];
+			type = [];
+		} else if (typeof fun == 'undefined'){
+			fun = type;
+			type = [];
+		}
+		fun_callback = fun;
+		if (typeof(title) == 'object'){
+			titles = title;
+		} else{
+			titles = [title];
+			out_string = true;
+		}
+		if (typeof(input) == 'object'){
+			inputs = input;
+		}else{
+			inputs = [input];
+		}
+		if (typeof(type) == 'object'){
+			types = type;
+		}else{
+			types = [type];
+		}
+
+		if (titles.length == 0){
+			PDInterface.alert('pram error 2');
+			PDCloudNote.WindowCommand('close');
+		}
+		//$('.title').html(title);
+	}
+	$(document).ready(function () {
+		initTitleBar(true);
+		$('.title_bar .btn_close').click(function () {
+			try {
+				fun_callback(false, $.trim($('.text').val()));
+			} catch(e){
+				console.error(e);
+			}
+		});
+		$('.btn.ok').click(function () {
+			/*try {
+				fun_callback(true, $.trim($('.text').val()));
+			} catch (e){
+				console.error(e);
+			}
+			PDCloudNote.WindowCommand('close');
+			*/
+		});
+	});
+	var app_uploader = angular.module('inputs', []);
+	app_uploader.controller('inputs', function ($scope, $http, $timeout) {
+		$scope.titles = [];
+		$scope.inputs = [];
+		check();
+		function check() {
+			if (titles.length == 0){
+				//console.info(test);
+				$timeout(check, 100);
+				return;
+			}
+			$scope.titles = titles;
+			$scope.inputs = inputs;
+			$scope.types = types;
+		}
+		$scope.clickOK = function () {
+			/*$.ajax({
+				url: 'http://www.baidu.com/t='+(new Date()).getTime()
+			})
+			return;*/
+			var out;
+			if (out_string){
+				out = $scope.inputs[0];
+			} else{
+				out = $scope.inputs;
+			}
+			try{
+				fun_callback(true, out);
+			} catch (e){
+				console.error(e);
+			}
+			//window.close();
+		};
+	});
+</script>
+    </body>
+</html>
+

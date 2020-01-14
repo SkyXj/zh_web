@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<!-- Use correct character set. -->
+	<meta charset="utf-8">
+	<!-- Tell IE to use the latest, best version. -->
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<!-- Make the application on mobile take up the full browser screen and disable user scaling. -->
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+	<title>Hello World!</title>
+	<script src="./js/jquery-1.11.1.min.js"></script>
+	<script src="./thirdparty/angular.min.js"></script>
+	<script src="./thirdparty/jsColor.js"></script>
+	<script src="./js/tools.js"></script>
+	<script src="./js/main/config.js"></script>
+
+	<style>
+		@import url(./css/index.css);
+		body{
+			overflow: hidden;
+		}
+		.btn{
+			color: #fff;
+			padding: 5px 20px;
+			background: #448aff;
+			border-radius: 4px;
+		}
+		.btn:hover{
+			background: #3777e4;
+		}
+		.main {
+			padding: 10px;
+		}
+		.item{
+			margin: 15px 0 0 0;
+		}
+		.title{
+			font-weight: bold;
+			min-width: 100px;
+			margin-top: 10px;
+		}
+		.map_container{
+			display: flex;
+			flex-wrap: wrap;
+			min-width: 210px;
+		}
+		.sel_option{
+			margin: 10px;
+			padding: 3px 10px;
+			border: 1px solid #ccc;
+			border-radius: 2px;
+			width: 60px;
+			text-align: center;
+		}
+		.sel_option.selected{
+			color: #0088FF;
+			border: 1px solid #0088FF;
+		}
+		.file{
+			min-width: 30px;
+			margin-left: 5px;
+			max-width: calc(100% - 215px);
+		}
+		.input_number{
+			width: 80px;
+			margin: 0 0 0 2px;
+		}
+		input{
+			width: 60px;
+			height: 20px;
+			border: 1px solid #aaa;
+			padding-left: 5px;
+		}
+	</style>
+</head>
+<body ng-app="settings" ng-controller="all">
+<div class="main" ng-switch="area">
+	<div class="item flex-line" ng-switch-when="0">
+		<p class="btn open" ng-click="clickOpenFile()" style="width: 60px;min-width:60px;text-align: center">打开文件</p>
+		<p class="text-ellipsis space" ng-bind="data_file" title="{{data_file}}"></p>
+	</div>
+	<div class="item flex-line" ng-switch-when="1">
+		<p class="title">显示模式</p>
+		<ul class="map_container">
+			<li class="sel_option {{settings.area[area].mode == PDConfig.const.MODE_REALTIME ?'selected':''}}"  ng-click="clickModeOption(PDConfig.const.MODE_REALTIME)">
+				<p>走航模式</p>
+			</li>
+			<li class="sel_option {{settings.area[area].mode == PDConfig.const.MODE_FILE ?'selected':''}}" ng-click="clickModeOption(PDConfig.const.MODE_FILE)">
+				<p>文件模式</p>
+			</li>
+		</ul>
+		<p class="text-ellipsis space" style="max-width: 180px;" ng-bind="data_file" title="{{data_file}}"></p>
+	</div>
+	<div class="item flex-line" style="align-items: flex-start;">
+		<p class="title">图形模式</p>
+		<div>
+			<div class="flex-line">
+				<div class="sel_option {{settings.area[area].shape == PDConfig.const.SHAPE_PILLAR ?'selected':''}}"  ng-click="clickShapeOption(PDConfig.const.SHAPE_PILLAR)">
+					<p>柱状图</p>
+				</div>
+				<div class="sel_option {{settings.area[area].shape == PDConfig.const.SHAPE_LINE ?'selected':''}}" ng-click="clickShapeOption(PDConfig.const.SHAPE_LINE)">
+					<p>折线图</p>
+				</div>
+			</div>
+			<div class="flex-line">
+				<div class="sel_option {{settings.area[area].shape == PDConfig.const.SHAPE_DOT ?'selected':''}}" ng-click="clickShapeOption(PDConfig.const.SHAPE_DOT)">
+					<p>散点图</p>
+				</div>
+				<p style="margin-left: 10px">宽度</p>
+				<input type="number" min="5" max="200" ng-model="settings.area[area].shape_dot_width"/>
+				<p>(m)</p>
+			</div>
+			<div class="flex-line">
+				<div class="sel_option {{settings.area[area].shape == PDConfig.const.SHAPE_PATH ?'selected':''}}" ha="{{settings.area[area].shape}}" ng-click="clickShapeOption(PDConfig.const.SHAPE_PATH)">
+					<p>路径</p>
+				</div>
+				<p style="margin-left: 10px">颜色</p>
+				<input class="color" ng-model="settings.area[area].shape_path_color" style="width: 50px" />
+				<p style="margin-left: 3px">宽度</p>
+				<input type="number" min="5" max="10000" ng-model="settings.area[area].shape_path_width"/>
+				<p>(m)</p>
+			</div>
+		</div>
+	</div>
+	<div class="item flex-line" ng-show="false">
+		<p class="title">走航图缩放倍数</p>
+		<input type="number" class="input_number" ng-model="settings.map_zoom" />
+	</div>
+	<div class="flex-line" style="    margin-top: 20px;border-top: 1px dashed #ddd;padding-top: 10px;">
+		<div class="space"></div>
+		<p class="btn ok" ng-click="clickOK()">确定</p>
+	</div>
+
+</div>
+<script>
+	function init(settings) {
+
+	}
+	var app = angular.module('settings', []);
+	app.controller('all', function ($scope){
+		$scope.PDConfig = PDConfig;
+		if (PDTools.getQuery(window.location.href, 'area') == '1')
+			$scope.area = 1;
+		else
+			$scope.area = 0;
+
+		$scope.settings = PDCommon.getData('settings');
+		$scope.settings = PDConfig.default($scope.settings, $scope.area);
+
+		$scope.clickModeOption = function (mode) {
+			$scope.settings.area[$scope.area].mode = mode;
+			if (mode == PDConfig.const.MODE_FILE){
+				PDCommon.FileSelect('数据文件|*.txt;', function (res) {
+					if (res && res.result){
+						$scope.data_file = res.result;
+						$scope.$apply();
+					}
+				});
+			}
+		}
+		$scope.clickShapeOption = function (shape) {
+			$scope.settings.area[$scope.area].shape = shape;
+		}
+		$scope.clickOK = function () {
+			var width = $scope.settings.area[$scope.area].shape_path_width;
+			if (width == undefined || width < 5 || width > 10000){
+				PDTools.notify('路径宽度应在5~10000之间');
+				return;
+			}
+			width = $scope.settings.area[$scope.area].shape_dot_width;
+			if (width == undefined || width < 5 || width > 200){
+				PDTools.notify('散点图宽度应在5~200之间');
+				return;
+			}
+
+			window.parent.onCloseDialog();			
+			var settings = {area: []};
+			settings.area[$scope.area] = {
+				mode: $scope.settings.area[$scope.area].mode,
+				shape: $scope.settings.area[$scope.area].shape,
+				shape_path_color: $scope.settings.area[$scope.area].shape_path_color,
+				shape_path_width: $scope.settings.area[$scope.area].shape_path_width,
+				shape_dot_width: $scope.settings.area[$scope.area].shape_dot_width
+			}
+			window.parent.onShapeChange(settings, $scope.data_file);
+		}
+		$scope.clickOpenFile = function () {
+			PDCommon.FileSelect('数据文件|*.txt;', function (res) {
+				if (res && res.result){
+					$scope.data_file = res.result;
+					$scope.$apply();
+
+					//window.parent.onCloseDialog();
+					//window.parent.onShapeChange($scope.settings, $scope.data_file);
+				}
+			});
+		}
+
+		setTimeout(function () { //在angulajs里执行会有问题，所以放到timer里去执行
+			$('.color').each(function () {
+				var input = new jscolor(this);
+				//input.fromString('#f00');
+			});
+		}, 200);
+	});
+</script>
+</body>
+</html>

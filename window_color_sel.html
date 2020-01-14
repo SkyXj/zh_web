@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>输入</title>
+		<link href="css/index.css" rel="stylesheet" />
+		<script type="text/javascript" src="js/jquery-1.11.1.min.js"></script>
+		<script type="text/javascript" src="js/tools.js"></script>
+		<script type="text/javascript" src="thirdparty/angular.min.js"></script>
+		<script src="./thirdparty/jsColor.js"></script>
+		<style>
+			.btn{
+				color: #fff;
+				padding: 5px 20px;
+				background: #448aff;
+				border-radius: 4px;
+			}
+			.btn:hover{
+				background: #3777e4;
+			}
+			.btn{
+				position: absolute;
+				bottom: 10px;
+				right: 10px;
+			}
+			.main{
+				margin: 30px;
+			}
+			.line{
+				display: flex;
+				flex-direction: row;
+				align-items: center;
+				margin: 20px 0;
+			}
+			.title{
+				margin-right: 10px;
+				width: 80px;
+			}
+			.color{
+				border: 1px solid #ccc;
+				height: 30px;
+				text-align: center;
+				width: 238px;
+			}
+			.alpha{
+				height: 30px;
+				width: 236px;
+				padding: 0 0 0 3px;
+			}
+		</style>
+    </head>
+    <body ng-app="sel" ng-controller="all">
+	<div class="main">
+		<div class="line">
+			<p class="title">颜色：</p>
+			<input class="color" ng-model="colorString" />
+		</div>
+		<div class="line">
+			<p class="title">透明度：</p>
+			<input class="alpha" type="number" min="0.2" max="1.0" step="0.1" ng-model="alpha"  />
+		</div>
+		<div class="line">
+			<p class="title">位置：</p>
+			<div>
+				<div class="flex-line">
+					<p>({{pos[0].lng}},{{pos[0].lat}})</p>
+					<p>({{pos[1].lng}},{{pos[1].lat}})</p>
+				</div>
+				<div class="flex-line">
+					<p>({{pos[2].lng}},{{pos[2].lat}})</p>
+					<p>({{pos[3].lng}},{{pos[3].lat}})</p>
+				</div>
+			</div>
+
+		</div>
+
+	</div>
+	<p class="btn" ng-click="clickOK()">确定</p>
+<script>
+	var fun_cb;
+	function init(pos, fun){
+		fun_cb = fun;
+		setTimeout(check, 100);
+		function check(){
+			var $scope = $('[ng-controller=all]').scope();
+			if ($scope){
+				$scope.pos = [];
+				for (var i in pos){
+					$scope.pos[i] = {lng:pos[i].lng.toFixed(3), lat:pos[i].lat.toFixed(3)}
+				}
+				$scope.$apply();
+			}else{
+				setTimeout(check, 100);
+			}
+		}
+	}
+	var app = angular.module('sel', []);
+	app.controller('all', function ($scope){
+		$scope.colorString = 'FFFF00';
+		$scope.alpha = 0.6;
+		openColorsSelector($scope);
+		$scope.clickOK = function(){
+			var $scope = $('[ng-controller=all]').scope();
+			if (!$scope.alpha || $scope.alpha < 0.2 || $scope.alpha > 1.0){
+				PDTools.notify('透明度在0.2~1之间');
+				return;
+			}
+			window.parent.onCloseDialog();
+			if (fun_cb)
+				fun_cb($scope.colorString, parseFloat($scope.alpha));
+		}
+	});
+	function openColorsSelector($scope) {
+		setTimeout(function () { //在angulajs里执行会有问题，所以放到timer里去执行
+			$('.color').each(function () {
+				var input = new jscolor(this);
+				//input.fromString('#f00');
+			});
+		}, 200);
+	}
+</script>
+    </body>
+</html>
+

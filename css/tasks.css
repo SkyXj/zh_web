@@ -1,0 +1,91 @@
+select{
+    /*去除外边框*/
+    border: none;
+    /*适应safari浏览器内容不跑偏*/
+    line-height: 1;
+    width: 100%;
+    /*将默认的select选择框样式清除*/
+    appearance:none;
+    -moz-appearance:none;
+    -webkit-appearance:none;
+    /*在选择框的最右侧中间显示小箭头图片*/
+    background: url("../images/dropdown.png") no-repeat scroll right center transparent;
+    /*为下拉小箭头留出一点位置，避免被文字覆盖*/
+    padding: 0 14px 0 3px;
+    font-size: 12px;
+    /*color: #666666;*/
+    /*去除选中时样式*/
+    outline: none;
+    /**/
+    border: 1px solid #ccc;
+    height: 22px;
+}
+.main{
+    margin: 0 auto;
+    position: relative;
+}
+.highlight{
+    background-color: #FB2929;
+    color: #FFFFFF;
+}
+.bar{
+    height: 32px;
+    /* margin-top: 10px; */
+    width: 610px;
+    margin: 10px auto 0 auto;
+}
+.status{
+    width: 100px;
+    height: 30px;
+    margin-left: 10px;
+}
+.list{
+    position: fixed;
+    left:0;
+    top:55px;
+    right: 0px;
+    bottom: 0;
+    overflow: auto;
+}
+.task{
+    padding: 10px 5px;
+    background: #F4F7FC;
+    border-radius: 4px;
+    margin: 5px auto;
+    width: 600px;
+}
+.task .file_icon{
+    margin: 0 10px;
+    width: 32px;
+    height: 32px;
+}
+.task .title{
+    margin: 0 0 0 3px;
+    color:rgb(51, 103, 214);
+}
+.task .error_task{
+    color: #FB2929;
+    margin-left: 10px;
+}
+.task .progress{
+    border: 1px solid #eee;
+    height: 10px;
+    margin: 5px 10px 0 0;
+}
+.task .progress .val{
+    background: #448AFF;
+    height: 100%;
+}
+.task .progress .val.over{
+    background: #91CA7F;
+}
+.task .btn_folder_show{
+    margin: 2px 0 0 0;
+    color: #ccc;
+}
+.task .btn_folder_show.downover{
+    color:rgb(51, 103, 214);
+}
+.task .btn_folder_show.downover:hover{
+    text-decoration: underline;
+}

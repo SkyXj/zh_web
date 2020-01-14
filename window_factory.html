@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>输入</title>
+		<link href="css/index.css" rel="stylesheet" />
+		<script type="text/javascript" src="js/jquery-1.11.1.min.js"></script>
+		<script type="text/javascript" src="js/tools.js"></script>
+		<script type="text/javascript" src="thirdparty/angular.min.js"></script>
+		<style>
+			body{
+				overflow: hidden;
+			}
+			.btn{
+				color: #fff;
+				padding: 5px 20px;
+				background: #448aff;
+				border-radius: 4px;
+			}
+			.btn:hover{
+				background: #3777e4;
+			}
+			.btn{
+				position: absolute;
+				bottom: 10px;
+				right: 10px;
+			}
+			.group{
+				padding: 10px;
+				margin: 20px 10px 10px 10px;
+				border: 1px solid #ddd;
+    			border-radius: 4px;
+			}
+			.group_title{
+				margin: -20px 0 0 10px;
+			}
+			.group_name{
+				background: #fff;
+    			padding: 0 5px;
+			}
+			.group .item{
+				margin: 15px 80px 0 0;
+			}
+			.group .title{
+				width: 70px;
+			}
+			.group .right .title{
+				width: 45px;
+			}
+			
+			.group input{
+				width: 150px;
+				height: 24px;
+				border: 1px solid #ccc;
+				border-radius: 2px;
+				margin-right: 2px;
+			}
+			.group .must{
+				color: #f00;
+			}
+			.group .address{
+				width: 150px;
+				height: 106px;
+				border: 1px solid #ccc;
+				resize: none;
+			}
+			.item.product{
+				margin-right: 10px;
+			}
+			.item.product input{
+				width: 435px;
+			}
+			.material{
+				height: 120px;
+				border: 1px solid #ccc;
+				width: 556px;
+				resize: none;
+				margin-top: 10px;
+			}
+		</style>
+    </head>
+    <body ng-app="factory" ng-controller="all">
+	<div class="group">
+		<div class="group_title flex-line"><p class="group_name">工厂基本信息</p><p class="space"></p></div>
+		<div class="flex-line">
+			<div>
+				<div class="item flex-line">
+					<p class="title">单位名称:</p>
+					<input type="text" ng-model="name" ng-disabled="edit" />
+					<p class="must">*</p>
+				</div>
+				<div class="item flex-line">
+					<p class="title">行业类别:</p>
+					<input type="text" ng-model="industry" ng-disabled="edit" />
+					<p class="must">*</p>
+				</div>
+				<div class="item flex-line">
+					<p class="title">法人代表:</p>
+					<input type="text" ng-model="representative" ng-disabled="edit" />
+					<p class="must">*</p>
+				</div>
+				<div class="item flex-line">
+					<p class="title">联系人:</p>
+					<input type="text" ng-model="contact" ng-disabled="edit" />
+					<p class="must">*</p>
+				</div>
+				<div class="item flex-line">
+					<p class="title">联系方式:</p>
+					<input type="text" ng-model="tel" ng-disabled="edit" />
+				</div>
+			</div>
+			<div class="right">
+				<div class="item flex-line" style="align-items: flex-start">
+						<p class="title" style="padding-top: 5px;">地址:</p>
+						<textarea class="address" ng-model="address" ng-disabled="edit"></textarea>
+				</div>
+				<div class="item flex-line">
+					<p class="title">经度:</p>
+					<input type="text" ng-model="lng" ng-change="onChangeLng()" ng-disabled="true" />
+					<p class="must">*</p>
+				</div>
+				<div class="item flex-line">
+					<p class="title">纬度:</p>
+					<input type="text" ng-model="lat" ng-change="onChangeLat()" ng-disabled="true" />
+					<p class="must">*</p>
+				</div>
+			</div>
+		</div>
+		<div class="item product flex-line">
+			<p class="title">主要产品:</p>
+			<input type="text" ng-model="product" ng-disabled="edit" />
+		</div>
+	</div>
+	<div class="group">
+			<div class="group_title flex-line"><p class="group_name">物质信息</p><p class="space"></p></div>
+			<textarea class="material" ng-model="material"></textarea>
+	</div>
+	<p class="btn" ng-click="clickOK();">确定</p>
+<script>
+	var fun_cb;
+	function init(param, fun){
+		fun_cb = fun;
+		setTimeout(check, 100);
+		function check(){
+			var $scope = $('[ng-controller=all]').scope();
+			if ($scope){
+				
+				if (param){
+					//$scope.edit = param.name != undefined;
+					$scope.name = param.name;
+					$scope.industry = param.industry;
+					$scope.representative = param.representative;
+					$scope.contact = param.contact;
+					$scope.tel = param.tel;
+					$scope.address = param.address;
+					$scope.lng = param.lng != undefined ? param.lng.toFixed(5) : undefined;
+					$scope.lat = param.lat != undefined ? param.lat.toFixed(5) : undefined;
+					$scope.product = param.product;
+					$scope.material = param.material;
+					$scope.$apply();
+				}else{
+					
+				}
+			}else{
+				setTimeout(check, 100);
+			}
+		}
+	}
+	var app = angular.module('factory', []);
+	app.controller('all', function ($scope){
+		//$scope.edit = undefined;
+		$scope.onChangeLng = function(){
+			$scope.lng = format_number($scope.lng, -180, 180);
+		}
+		$scope.onChangeLat = function(){
+			$scope.lat = format_number($scope.lat, -90, 90);
+		}
+		function format_number(val, min, max){
+			val = val.replace(/[^0-9\.-]/g, '');
+			if (val == '-') return val;
+			if (val.match(/\.$/)) return val;
+			val = parseFloat(val);
+			if (val < min) val = min;
+			if (val > max) val = max;
+			return val;
+		}
+		$scope.clickOK = function(){
+			if (!str_valid($scope.name)){
+				PDTools.notify('请填写单位名称');
+				return;
+			}
+			if (!str_valid($scope.industry)){
+				PDTools.notify('请填写行业类别');
+				return;
+			}
+			if (!str_valid($scope.representative)){
+				PDTools.notify('请填写法人代表');
+				return;
+			}
+			if (!str_valid($scope.contact)){
+				PDTools.notify('请填写联系人');
+				return;
+			}
+			if (!str_valid($scope.lng)){
+				PDTools.notify('请填写经度');
+				return;
+			}
+			if (!str_valid($scope.lat)){
+				PDTools.notify('请填写纬度');
+				return;
+			}
+			$scope.lng = parseFloat($scope.lng);
+			$scope.lat = parseFloat($scope.lat);
+			if ($scope.lng < -180 || $scope.lng > 180){
+				PDTools.notify('纬度值在-180~180之间');
+				return;
+			}
+			if ($scope.lat < -90 || $scope.lat > 90){
+				PDTools.notify('纬度值在-90~90之间');
+				return;
+			}
+			
+			fun_cb({
+				name: $scope.name,
+				industry: $scope.industry,
+				representative: $scope.representative,
+				contact: $scope.contact,
+				tel: $scope.tel,
+				address: $scope.address,
+				lng: $scope.lng,
+				lat: $scope.lat,
+				product: $scope.product,
+				material: $scope.material
+			});
+			return;
+			function str_valid(str){
+				return str != undefined && str != ''; 
+			}
+			
+		}
+	});
+
+	$(document).ready(function () {
+	});
+</script>
+    </body>
+</html>
+

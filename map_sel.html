@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<!-- Use correct character set. -->
+	<meta charset="utf-8">
+	<!-- Tell IE to use the latest, best version. -->
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<!-- Make the application on mobile take up the full browser screen and disable user scaling. -->
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+	<title>Hello World!</title>
+	<script src="./js/jquery-1.11.1.min.js"></script>
+	<script src="./thirdparty/angular.min.js"></script>
+	<script src="./js/Base64.js"></script>
+	<script src="./js/tools.js"></script>
+	<script src="./thirdparty/Cesium/Cesium.js"></script>
+	<script src="./thirdparty/baidutile.js"></script>
+	<script src="./thirdparty/coordtransform.js"></script>
+	<script src="./js/main/map.js"></script>
+	<link rel="stylesheet" href="./thirdparty/Cesium/Widgets/widgets.css" />
+	<link rel="stylesheet" href="./css/index.css" />
+	<style>
+		body{
+			
+		}
+		.btn{
+			color: #fff;
+			padding: 5px 20px;
+			background: #448aff;
+			border-radius: 4px;
+		}
+		.btn:hover{
+			background: #3777e4;
+		}
+		.map_sel{
+			overflow: auto;
+			display: flex;
+			flex-direction: row;
+			align-items: center;
+			position: absolute;
+			left: 0;
+			right: 0;
+			top: 0;
+			bottom: 0;
+			background: url(./images/map_sel_bk.png) no-repeat;
+			background-size: 100% 100%
+		}
+		.main {
+			position: relative;
+			width: 700px;
+			height: 600px;
+			margin: auto auto auto auto;
+			display: flex;
+			align-items: center;
+			flex-direction: column;
+		}
+		.item{
+			margin: 15px 0 0 0;
+		}
+		.title{
+			font-weight: bold;
+			min-width: 100px;
+		}
+		.map_container{
+			display: flex;
+			flex-wrap: wrap;
+		}
+		.sel_option{
+			margin: 2px;
+			padding: 3px 10px;
+			border: 1px solid #ccc;
+		}
+		.sel_option.selected{
+			color: #0088FF;
+			border: 1px solid #0088FF;
+		}
+		.file{
+			min-width: 30px;
+			margin-left: 5px;
+			max-width: calc(100% - 215px);
+		}
+		.btn_map{
+			background: url(./images/map_btn_normal.png);
+			background-size: 100% 100%;
+			margin: 8px 0;
+			padding: 10px 0px;
+			width: 300px;
+			height: 55px;
+			line-height: 55px;
+			text-align: center;
+			color: #2A9BC5;
+			font-size: 20px;
+		}
+		.btn_map:hover{
+			background: url(./images/map_btn_hover.png);
+			background-size:100% 100%;
+		}
+		.btn_map.selected{
+			background: url(./images/map_btn_active.png);
+			background-size:100% 100%;
+			font-weight: bold;
+		}
+		.arrow_down{
+			width: 16px;
+			height: 12px;
+			background: url(./images/arrow_down.png);
+			background-size:100% 100%;
+			margin-left: 30px;
+			opacity: 0.6;
+		}
+		.arrow_down.expand{
+			transform: rotate(180deg);
+		}
+		.extra_expand{
+			width: 240px;
+			background: #171602;
+			box-shadow: #292929 0 0 2px 2px;
+			border-radius: 2px;
+		}
+		.offline{
+			color: #fff;
+			padding: 15px;
+			text-align: center;
+			font-size: 18px;
+		}
+		.offline.selected{
+			background: #2A9BC5;
+		}
+		.offline:hover{
+			background: #2A9BC5;
+		}
+		.btn_ok{
+			position: absolute;
+			bottom: 50px;
+			right: 50px;
+			color: #fff;
+			font-size: 24px;
+			background: #000;
+			/* padding: 20px; */
+			border-radius: 40px;
+			width: 80px;
+			height: 80px;
+			line-height: 80px;
+			text-align: center;
+		}
+		.btn_ok:hover{
+			box-shadow: #666 0 0 2px 2px;
+		}
+		.btn_ok img{
+			position: absolute;
+    		top: 85px;
+    		left: 22px;
+		}
+	</style>
+</head>
+<body ng-app="settings" ng-controller="all" style="">
+	<div class="map_sel">
+		<div class="main">
+			<img src="./images/map_sel_title.png"/>
+			<div class="btn_map flex-line {{sources[settings.cur_source]==source?'selected':''}}" ng-repeat="source in sources_online" ng-click="clickMapOption(source)">
+				<p class="space"></p>
+				<span ng-bind="source.name"></span>
+				<span class="arrow_down" ng-show="source.offline">&nbsp;</span>
+				<p class="space"></p>
+			</div>
+			<div class="btn_map flex-line {{(settings.cur_source >= sources_online.length)?'selected':''}}"  ng-click="extra_expand=!extra_expand">
+				<p class="space"></p>
+				<span>离线地图</span>
+				<span class="arrow_down {{extra_expand?'expand':''}}">&nbsp;</span>
+				<p class="space"></p>
+			</div>
+			<div class="extra_expand" ng-show="extra_expand">
+				<div class="offline {{sources[settings.cur_source]==source?'selected':''}}" ng-repeat="source in sources_offline" ng-click="clickMapOption(source)" >
+					<p ng-bind="source.name"></p>
+				</div>
+			</div>
+			
+		</div>
+		<div class="btn_ok">
+			<p ng-click="clickOK()">继续</p>
+			<img src="images/btn_shadow.png" />
+		</div>
+	</div>
+
+<div id="cesiumContainer" style="width: 100%;height: 100%;position: fixed; display: none"></div>
+
+<script>
+	init();
+	function init() {
+		if (PDAISpider_Param != 'noload'){
+		}else{
+			var param = {};
+			PDInterface.doAction("on_load", param, function (res) {});
+		}
+	}
+
+	PDCommon.resetData('CmdCache', []);
+	function AdapterOnCmd(cmd) {
+		console.info(cmd);
+		if (cmd.cmd == 'Start' || cmd.cmd == 'SetName'){
+			var data = PDCommon.getData('CmdCache');
+			if (!data || !data.length) data = [];
+			data.push(cmd);
+			PDCommon.resetData('CmdCache', data);
+		}
+	}
+	var app = angular.module('settings', []);
+	app.controller('all', function ($scope){
+		/*$scope.settings = {sources:[
+		 {name:'测试', sate: true},
+		 {name:'测试', sate: true},
+		 {name:'测试', sate: true},
+		 {name:'测试', sate: true},
+		 {name:'测试', sate: true, selected: true},
+		 ]};*/
+		$scope.settings = PDCommon.getData('settings');
+
+		$scope.sources = [];
+		$scope.sources_online = [];
+		$scope.sources_offline = [];
+		$scope.cur_source = {};
+		for (var i in PDMap.source ) {
+			if (PDMap.source[i].satellite){
+				$scope.sources.push({
+					name: PDMap.source[i].name+'卫星地图',
+					sate: true,
+					transform: PDMap.source[i].transform,
+					provider: PDMap.source[i].satellite
+				});
+				$scope.sources_online.push($scope.sources[$scope.sources.length - 1]);
+			}
+			if (PDMap.source[i].normal){
+				$scope.sources.push({
+					name: PDMap.source[i].name+'普通地图',
+					sate: false,
+					transform: PDMap.source[i].transform,
+					provider: PDMap.source[i].normal
+				});
+				$scope.sources_online.push($scope.sources[$scope.sources.length - 1]);
+			}
+		}
+		for (var i in PDMap.source ) {
+			if (PDMap.source[i].offline){
+				$scope.sources.push({
+					name: PDMap.source[i].name+'地图',
+					offline: true,
+					transform: PDMap.source[i].transform,
+					provider: PDMap.source[i].offline
+				});
+				$scope.sources_offline.push($scope.sources[$scope.sources.length - 1]);
+			}
+		}
+		if ($scope.settings.cur_source == undefined || $scope.settings.cur_source > $scope.sources.length - 1){
+			$scope.settings.cur_source = 0;
+		}else{
+			if ($scope.sources[$scope.settings.cur_source].offline){
+				if (!PDCommon.FileExists2($scope.settings.map_offline_dir)){
+					PDTools.notify('离线地图数据目录不存在，已切回默认地图');
+					$scope.settings.cur_source = 0;
+				}
+			}
+		}
+
+		$scope.clickMapOption = function (source) {
+			if (!source){
+				$scope.extra_expand = true;
+
+				return;
+			}else{
+				switch_source(source);
+			}
+			function switch_source (source) {
+				var off = false;
+				for (var i = 0; i < $scope.sources_offline.length; i ++){
+					if (source == $scope.sources_offline[i])
+							off = true;
+				}
+				if (!off){
+					switchTo();
+				}else{
+					PDCommon.DirectorySelect('选择离线数据目录', function (res) {
+						if (!res || !res.result || res.result == ''){
+							return;
+						}
+						var dir = res.result + "\\tiles";
+						if (!PDCommon.FileExists2(dir)){
+							PDTools.notify('错误：没有发现tiles目录');
+							return;
+						}
+
+						PDCommon.setData('settings', {map_offline_dir:dir});
+						switchTo();
+						$scope.$apply();
+					});
+				}
+				function switchTo () {
+					$scope.extra_expand = false;
+					for (var i = 0; i < $scope.sources.length; i ++){
+						if (source == $scope.sources[i])
+							$scope.settings.cur_source = i;
+					}
+					PDCommon.setData('settings', {cur_source:$scope.settings.cur_source});
+				}
+			}
+
+		}
+		$scope.clickOK = function () {
+			window.location.href = 'container.html?map='+$scope.settings.cur_source;
+		}
+	});
+	//test();
+	function test() {
+		$('#cesiumContainer').show();
+		$('.main').hide();
+
+		var provider = new Cesium.WebMapTileServiceImageryProvider({
+			url: "http://t0.tianditu.com/vec_w/wmts?service=wmts&request=GetTile&version=1.0.0&LAYER=vec&tileMatrixSet=w&TileMatrix={TileMatrix}&TileRow={TileRow}&TileCol={TileCol}&style=default&format=tiles",
+			layer: "tdtVecBasicLayer",
+			style: "default",
+			format: "image/png",
+			tileMatrixSetID: "GoogleMapsCompatible",
+			show: false
+		});
+		viewer = new Cesium.Viewer('cesiumContainer',{
+			baseLayerPicker:false,
+			timeline:false,
+			homeButton:false,//归位
+			fullscreenButton:false,
+			scene3DOnly: true,
+			infoBox:false,
+			sceneModePicker:false, //2D 3D切换
+			navigationInstructionsInitiallyVisible:false,
+			navigationHelpButton:false,
+			geocoder:false,
+			animation:false,
+			selectionIndicator:false, //是否显示选中地图元素标识控件
+			imageryProvider : provider
+		});
+		var scene = viewer.scene;
+		var instance = new Cesium.GeometryInstance({
+			geometry : new Cesium.RectangleGeometry({
+				rectangle : Cesium.Rectangle.fromDegrees(-100.0, 20.0, -90.0, 30.0),
+				vertexFormat : Cesium.EllipsoidSurfaceAppearance.VERTEX_FORMAT
+			})
+		});
+		scene.primitives.add(new Cesium.Primitive({
+			geometryInstances : instance,
+			appearance : new Cesium.EllipsoidSurfaceAppearance({
+				material : Cesium.Material.fromType('Dot')
+			})
+		}));
+
+		var primitive = new Cesium.Primitive({
+			geometryInstances : new Cesium.GeometryInstance({
+				geometry : new Cesium.WallGeometry({
+					positions : Cesium.Cartesian3.fromDegreesArray([
+						113.3, 23.2,
+						113.3, 25.2
+					]),
+					maximumHeights: [200000,200000],
+					minimumHeights: [100000,100000]
+				})
+			}),
+			appearance : new Cesium.MaterialAppearance({
+				material :  new Cesium.Material({
+					fabric : {
+						type : 'Color',
+						uniforms : {
+							color : new Cesium.Color(1.0, 0.0, 0.0, 0.90)
+						}
+					}
+				})
+			})
+		});
+		scene.primitives.add(primitive);
+		viewer.zoomTo(primitive);
+	}
+</script>
+</body>
+</html>

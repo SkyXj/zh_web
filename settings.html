@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<!-- Use correct character set. -->
+	<meta charset="utf-8">
+	<!-- Tell IE to use the latest, best version. -->
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<!-- Make the application on mobile take up the full browser screen and disable user scaling. -->
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+	<title>Hello World!</title>
+	<script src="./js/jquery-1.11.1.min.js"></script>
+	<script src="./thirdparty/angular.min.js"></script>
+	<script src="./thirdparty/jsColor.js"></script>
+	<script src="./js/tools.js"></script>
+	<script src="./js/main/config.js"></script>
+
+	<style>
+		@import url(./css/index.css);
+		body{
+			overflow: hidden;
+			padding: 15px;
+		}
+		.btn{
+			color: #fff;
+			padding: 5px 20px;
+			background: #448aff;
+			border-radius: 4px;
+		}
+		.btn:hover{
+			background: #3777e4;
+		}
+		.input_number{
+			width: 80px;
+			margin: 0 0 0 2px;
+		}
+		input[type=text],input[type=number]{
+			width: 60px;
+			height: 20px;
+			border: 1px solid #ddd;
+			padding: 0 0 0 3px;
+			margin-left: 3px;
+			border-radius: 2px;
+		}
+		input[type=checkbox]{
+			zoom: 150%;
+		}
+		.tab {
+			border-top: 1px solid #ddd;
+			border-left: 1px solid #ddd;
+			border-right: 1px solid #ddd;
+			border-top-left-radius: 4px;
+			border-top-right-radius: 4px;
+			padding: 5px 15px;
+		}
+		.tab.sel{
+			color: rgba(62,135,255, 1);
+			border-bottom: 1px solid #fff;
+			z-index: 10;
+		}
+		.main{
+			border: 1px solid #ddd;
+			height: 180px;
+			margin-bottom: 10px;
+			position: relative;
+			top: -1px;
+			z-index: 0;
+			padding: 15px 15px;
+		}
+		.option{
+			margin: 20px 0;
+		}
+		.factory, .area {
+			margin: 10px;
+		}
+		.factory .btn, .area .btn{
+			margin: 0 6px;
+		}
+		.wind .btn{
+			margin: 0 6px;
+		}
+		.unit{
+			margin-left: 2px;
+		}
+	</style>
+</head>
+<body ng-app="settings" ng-controller="all">
+<div class="flex-line">
+	<p class="tab {{panel_show=='wind'?'sel':''}}" ng-click="clickTab('wind');">风向</p>
+	<p class="tab {{panel_show=='show'?'sel':''}}" ng-click="clickTab('show');">显示</p>
+	<p class="tab {{panel_show=='factory'?'sel':''}}" ng-click="clickTab('factory');">工厂信息</p>
+	<p class="tab ng-hide {{panel_show=='animate'?'sel':''}}" ng-click="clickTab('animate');" ng-show="true">动画</p>
+	<p class="tab {{panel_show=='area'?'sel':''}}" ng-click="clickTab('area');">区域</p>
+	<p class="tab {{panel_show=='panel'?'sel':''}}" ng-click="clickTab('panel');">面板</p>
+</div>
+<div class="main">
+	<div ng-switch="panel_show">
+		<div class="wind" ng-switch-when="wind">
+			<div class="option flex-line">
+				<p>宽度</p>
+				<input type="number" min="5" max="1000" ng-model="$parent.settings.area[area].wind.width"/>
+				<p class="unit">m</p>
+				<div class="" style="width: 20px"></div>
+				<p>高度</p>
+				<input type="number" min="5" max="1000" ng-model="$parent.settings.area[area].wind.height"/>
+				<p class="unit">m</p>
+			</div>
+			<div class="option flex-line">
+				<p>长度/风速</p>
+				<input type="number" min="1" max="1000" ng-model="$parent.settings.area[area].wind.length_ratio"/>
+				<div class="" style="width: 20px"></div>
+				<p>最小长度</p>
+				<input type="number" min="5" max="1000" ng-model="$parent.settings.area[area].wind.length_min"/>
+				<p class="unit">m</p>
+			</div>
+			<div class="ng-hide option flex-line">
+					<input type="checkbox" ng-model="$parent.settings.area[area].wind.show_speed"/>
+					<p class="">显示风速</p>
+				</div>
+			<div class="flex-line">
+				<p class="btn" ng-click="clickWindImport();">导入</p>
+				<p class="btn" ng-click="clickWindExport();">导出</p>
+				<p class="btn" ng-click="clickWindClear();">清空</p>
+			</div>
+		</div>
+		<div ng-switch-when="show">
+			<!--<div class="option flex-line">
+				<input type="checkbox" ng-model="$parent.settings.area[area].show.aspect_ratio_enable"/>
+				<p>文件模式下自动调节</p>
+				<div class="" style="width: 20px"></div>
+				<p>宽高比</p>
+				<input type="number" min="0.001" max="1000" ng-model="$parent.settings.area[area].show.aspect_ratio"/>
+			</div>-->
+			<div class="option flex-line">
+				<p>走航图缩放倍数</p>
+				<input type="number" min="0.001" max="100000" ng-model="settings.area[area].show.zoom"/>
+				<input type="checkbox" style="margin-left: 10px" ng-model="$parent.settings.area[area].show.aspect_ratio_enable"/>
+				<p>文件模式下则自动调节</p>
+				<div class="" style="width: 0px"></div>
+				<p>宽高比</p>
+				<input type="number" min="0.001" max="1000" style="width: 40px" ng-model="$parent.settings.area[area].show.aspect_ratio"/>
+			</div>
+			<div class="option flex-line">
+				<input type="checkbox" ng-model="settings.area[area].show.view_fit_enable"/>
+				<p>最佳视角</p>
+				<div class="" style="width: 20px"></div>
+				<p>角度</p>
+				<input type="number" min="5" max="90" style="width: 40px" ng-model="settings.area[area].show.view_fit_angle1"/>
+				<p>(5~90度)</p>
+				<p style="margin-left: 20px" >方向</p>
+				<input type="number" min="0" max="360" style="width: 40px" ng-model="settings.area[area].show.view_fit_angle2"/>
+				<p>(0~360度)</p>
+			</div>
+		</div>
+		<div ng-switch-when="factory">
+			<div class="factory flex-line">
+				<p class="btn" ng-click="clickFactoryImport();">导入</p>
+				<p class="btn" ng-click="clickFactoryExport();">导出</p>
+				<p class="btn" ng-click="clickFactoryClear();">清空</p>
+			</div>
+		</div>
+		<div ng-switch-when="animate">
+			<div class="option flex-line">
+				<input type="checkbox" ng-model="settings.area[area].animate.enable_elapse"/>
+				<p>加载动画</p>
+				<input type="number" min="1" max="100000" style="width: 40px" ng-disabled="!settings.area[area].animate.enable_elapse" ng-model="settings.area[area].animate.elapse"/>
+				<p>毫秒</p>
+			</div>
+			<div class="option flex-line" ng-show="area == 1">
+				<input type="checkbox" ng-model="settings.area[area].animate.show_vehicle"/>
+				<p>实时走航时，走航车显示</p>
+			</div>
+		</div>
+		<div ng-switch-when="area">
+			<div class="area flex-line">
+				<p class="btn" ng-click="clickAreaImport();">导入</p>
+				<p class="btn" ng-click="clickAreaExport();">导出</p>
+				<p class="btn" ng-click="clickAreaClear();">清空</p>
+			</div>
+		</div>
+		<div ng-switch-when="panel">
+			<div class="option flex-line">
+				<input type="checkbox" ng-model="$parent.settings.area[area].panel.statistic_show"/>
+				<p>显示柱状图/饼图</p>
+			</div>
+			<div class="option flex-line">
+				<input type="checkbox" ng-model="$parent.settings.area[area].panel.error_show"/>
+				<p>显示异常点/异常信息</p>
+			</div>
+			<div class="option flex-line">
+				<input type="checkbox" ng-model="$parent.settings.area[area].panel.area_show"/>
+				<p>显示区域设置面板</p>
+			</div>
+			<div class="option flex-line">
+				<input type="checkbox" ng-model="$parent.settings.area[area].panel.shape_show"/>
+				<p ng-show="area==1">显示走航/文件信息</p>
+				<p ng-show="area==0">显示文件信息</p>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="flex-line" style=" ">
+	<div class="space"></div>
+	<p class="btn ok" ng-click="clickOK()">确定</p>
+</div>
+<script>
+	function init(settings) {
+
+	}
+	var app = angular.module('settings', []);
+	app.controller('all', function ($scope){
+		$scope.PDConfig = PDConfig;
+		if (PDTools.getQuery(window.location.href, 'area') == '1')
+			$scope.area = 1;
+		else
+			$scope.area = 0;
+
+		$scope.settings = PDCommon.getData('settings');
+		$scope.settings = PDConfig.default($scope.settings, $scope.area);
+
+		$scope.panel_show = 'show';
+
+		$scope.clickTab = function (src) {
+			$scope.panel_show = src;
+		}
+
+		$scope.clickFactoryImport = function () {
+			PDCommon.FileSelect('工厂标注数据(*.factory)|*.factory;', function (res) {
+				if (res && res.result){
+					window.parent.onFactory('open', res.result);
+					window.parent.onCloseDialog();
+				}
+			});
+		}
+		$scope.clickFactoryExport = function () {
+			var file = new Date();
+			file = '工厂标注'+(1900+file.getYear())+'-'+(file.getMonth()+1)+'-'+file.getDate()+'_'+file.getHours()+'-'+file.getMinutes()+'-'+file.getSeconds();
+			PDCommon.FileSelect('工厂标注数据(*.factory)|*.factory;', file, function (res) {
+				if (!res || !res.result || res.result.file == '') return;
+
+				var file = res.result.file.toLowerCase();
+				var ext = 'factory';
+				if (!file.match('\\.'+ext+'$')){
+					file += '.' + ext;
+				}
+				window.parent.onFactory('save', file);
+				window.parent.onCloseDialog();
+			});
+		}
+		$scope.clickFactoryClear = function () {
+			PDTools.showConfirm('清除工厂标注？', true, function (ok) {
+				if (!ok) return;
+
+				window.parent.onFactory('clear');
+				window.parent.onCloseDialog();
+			})
+		}
+
+		$scope.clickWindImport = function () {
+			PDCommon.FileSelect('风向标注(*.wind)|*.wind;', function (res) {
+				if (res && res.result){
+					window.parent.onWind('open', res.result);
+					window.parent.onCloseDialog();
+				}
+			});
+		}
+		$scope.clickWindExport = function () {
+			var file = new Date();
+			file = '风向标注'+(1900+file.getYear())+'-'+(file.getMonth()+1)+'-'+file.getDate()+'_'+file.getHours()+'-'+file.getMinutes()+'-'+file.getSeconds();
+			PDCommon.FileSelect('风向标注数据(*.wind)|*.wind;', file, function (res) {
+				if (!res || !res.result || res.result.file == '') return;
+
+				var file = res.result.file.toLowerCase();
+				var ext = 'wind';
+				if (!file.match('\\.'+ext+'$')){
+					file += '.' + ext;
+				}
+				window.parent.onWind('save', file);
+				window.parent.onCloseDialog();
+			});
+		}
+		$scope.clickWindClear = function () {
+			PDTools.showConfirm('清除风向标注？', true, function (ok) {
+				if (!ok) return;
+
+				window.parent.onWind('clear');
+				window.parent.onCloseDialog();
+			})
+		}
+		$scope.clickAreaImport = function () {
+			PDCommon.FileSelect('区域标注数据(*.area)|*.area;', function (res) {
+				if (res && res.result){
+					window.parent.onArea('open', res.result);
+					window.parent.onCloseDialog();
+				}
+			});
+		}
+		$scope.clickAreaExport = function () {
+			var file = new Date();
+			file = '区域标注'+(1900+file.getYear())+'-'+(file.getMonth()+1)+'-'+file.getDate()+'_'+file.getHours()+'-'+file.getMinutes()+'-'+file.getSeconds();
+			PDCommon.FileSelect('区域标注数据(*.area)|*.area;', file, function (res) {
+				if (!res || !res.result || res.result.file == '') return;
+
+				var file = res.result.file.toLowerCase();
+				var ext = 'area';
+				if (!file.match('\\.'+ext+'$')){
+					file += '.' + ext;
+				}
+				window.parent.onArea('save', file);
+				window.parent.onCloseDialog();
+			});
+		}
+		$scope.clickAreaClear = function () {
+			PDTools.showConfirm('清除所有区域标注？', true, function (ok) {
+				if (!ok) return;
+
+				window.parent.onArea('clear');
+				window.parent.onCloseDialog();
+			})
+		}
+
+		$scope.clickOK = function () {
+			var aspect_ratio_enable = $scope.settings.area[$scope.area].show.aspect_ratio_enable;
+			var aspect_ratio = $scope.settings.area[$scope.area].show.aspect_ratio;
+			if (aspect_ratio_enable){
+				if (aspect_ratio == undefined || aspect_ratio < 0.001 || aspect_ratio > 1000){
+					PDTools.notify('宽高比应在0.001~1000之间');
+					return;
+				}
+			}
+			var zoom = $scope.settings.area[$scope.area].show.zoom;
+			if (zoom == undefined || zoom < 0.001 || zoom > 100000){
+				PDTools.notify('走航图缩放倍数应在0.001~100000之间');
+				return;
+			}
+			var view_fit_enable = $scope.settings.area[$scope.area].show.view_fit_enable;
+			var view_fit_angle1 = $scope.settings.area[$scope.area].show.view_fit_angle1;
+			var view_fit_angle2 = $scope.settings.area[$scope.area].show.view_fit_angle2;
+			if (true){///view_fit_enable){
+				if (view_fit_angle1 == undefined || view_fit_angle1 < 5 || view_fit_angle1 > 90){
+					PDTools.notify('最佳视角角度应在5~90之间');
+					return;
+				}
+				if (view_fit_angle2 == undefined || view_fit_angle2 < 0 || view_fit_angle2 > 360){
+					PDTools.notify('最佳视角方向应在0~360之间');
+					return;
+				}
+			}
+			//
+			var wind_length_ratio = $scope.settings.area[$scope.area].wind.length_ratio;
+			var wind_length_min = $scope.settings.area[$scope.area].wind.length_min;
+			var wind_width = $scope.settings.area[$scope.area].wind.width;
+			var wind_height = $scope.settings.area[$scope.area].wind.height;
+			var wind_show_speed = $scope.settings.area[$scope.area].wind.show_speed;
+			if (wind_width == undefined || wind_width < 5 || wind_width > 1000){
+				PDTools.notify('风向宽度 应在5~1000之间');
+				return;
+			}
+			if (wind_height == undefined || wind_height < 5 || wind_height > 1000){
+				PDTools.notify('风向高度 应在5~1000之间');
+				return;
+			}
+			if (wind_length_ratio == undefined || wind_length_ratio < 1 || wind_length_ratio > 1000){
+				PDTools.notify('风向长度/风速 应在1~1000之间');
+				return;
+			}
+			if (wind_length_min == undefined || wind_length_min < 5 || wind_length_min > 1000){
+				PDTools.notify('风向最小长度 应在5~1000之间');
+				return;
+			}
+			
+			//
+			var shape_show = $scope.settings.area[$scope.area].panel.shape_show;
+			var statistic_show = $scope.settings.area[$scope.area].panel.statistic_show;
+			var error_show = $scope.settings.area[$scope.area].panel.error_show;
+			var area_show = $scope.settings.area[$scope.area].panel.area_show;
+			//
+			var enable_elapse = $scope.settings.area[$scope.area].animate.enable_elapse;
+			var elapse = $scope.settings.area[$scope.area].animate.elapse;
+			var show_vehicle = $scope.settings.area[$scope.area].animate.show_vehicle;
+			if (enable_elapse && (elapse == undefined || elapse < 1 || elapse > 100000)){
+				PDTools.notify('动画时间间隔应在1~100000之间');
+				return;
+			}
+
+			window.parent.onCloseDialog();
+			var settings = {area: []};
+			settings.area[$scope.area] = {
+				show:{
+					aspect_ratio_enable: !!aspect_ratio_enable,
+					aspect_ratio: aspect_ratio,
+					zoom: zoom,
+					view_fit_enable: !!view_fit_enable,
+					view_fit_angle1: view_fit_angle1,
+					view_fit_angle2: view_fit_angle2
+				},
+				wind:{
+					length_min: wind_length_min,
+					width: wind_width,
+					length_ratio: wind_length_ratio,
+					height: wind_height,
+					show_speed: wind_show_speed
+				},
+				panel:{
+					shape_show: shape_show,
+					error_show: error_show,
+					statistic_show: statistic_show,
+					area_show: area_show
+				},
+				animate:{
+					enable_elapse:enable_elapse,
+					elapse: elapse,
+					show_vehicle: show_vehicle
+				}
+			}
+			window.parent.onSettingsChange(settings, settings);
+		}
+
+	});
+</script>
+</body>
+</html>
