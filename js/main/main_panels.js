@@ -200,8 +200,8 @@ function Main_InitPanels($scope) {
                 $scope.panel.point_y = position.y;
 
             $scope.panel.point_show = true;
-            $scope.panel.point_mouse_x = parseFloat(shape.data[info.pos].pos.lng.toFixed(5));
-            $scope.panel.point_mouse_y = parseFloat(shape.data[info.pos].pos.lat.toFixed(5));
+            $scope.panel.point_mouse_x = parseFloat(shape.data[info.pos].pos.lng).toFixed(5);
+            $scope.panel.point_mouse_y = parseFloat(shape.data[info.pos].pos.lat).toFixed(5);
             $scope.panel.point_time = shape.data[info.pos].time;
 
 

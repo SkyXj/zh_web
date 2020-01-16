@@ -14,6 +14,10 @@
 	<script src="./js/tools.js"></script>
 	<script src="./js/main/config.js"></script>
 
+	<!-- xj add -->
+	<script src="./js/PDCommon.js"></script>
+	<script src="./js/PDInterface.js"></script>
+
 	<style>
 		@import url(./css/index.css);
 		@import url(./css/dialog.css);
@@ -163,13 +167,31 @@
 </head>
 <body ng-app="settings" ng-controller="all">
 <div class="color_settings" >
-	<div class="flex-line" style="padding: 0 10px"><input class="material_sel all_sel" ng-model="material_all" type="checkbox" /><p>全选</p></div>
+	<!-- 下拉框 -->
+	<div class="flex-line" style="padding: 0 10px">
+		<select ng-model="selectedName" ng-options="x for x in names" ng-change="standardChanges()">
+		</select>
+	</div>
+
+
+	<!-- <div class="flex-line" style="padding: 0 10px"><input class="material_sel all_sel" ng-model="material_all" type="checkbox" /><p>全选</p></div> -->
 	<div class="content">
 		<ul >
 			<li ng-repeat="item in settings.area[area].material" class="material flex-line" ng-show="item.has">
 				<input class="material_sel" type="checkbox" ng-disabled="item.has==false" ng-model="item.show"/>
 				<p class="title space" ng-bind="item.name"></p>
-				<input class="color" ng-model="item.colorString" />
+				阈值：<input class="title" style="width: 50px;margin-right: 300px;" ng-model="item.threshold" type="text"></input>
+
+				<ul>
+					<li ng-repeat="value in item.colors.color" class="material flex-line">
+						<input class="title" style="width: 50px;" ng-model="value.valmin" type="text"></input>
+						<p class="title space">~</p>
+						<input class="title" style="width: 50px;" ng-model="value.valmax" type="text"></input>
+						<input class="color" ng-model="value.colorString" />
+					</li>
+				</ul>
+
+				<!-- <input class="color" ng-model="item.colorString" /> -->
 			</li>
 		</ul>
 	</div>
@@ -187,6 +209,7 @@
 	</div>
 	<p class="btn btn_OK" ng-click="clickColorOK($event)">确定</p>
 </div>
+
 <div class="dialog_bk ng-hide dlg_color_level" ng-show="dialog.show">
 	<div class="dialog" style="{{'width:'+dialog.width+'px;left:calc(50% - '+dialog.width/2+'px);height:'+dialog.height+'px;top:calc(50% - '+dialog.height/2+'px);'}}">
 		<div class="dialog_title flex-line">
@@ -219,6 +242,48 @@
 	}
 	var app = angular.module('settings', []);
 	app.controller('all', function ($scope){
+
+		//xj add 有效代码
+		$scope.names = ["标准1", "标准2"];
+		$scope.selectedName=$scope.names[0];
+
+   		$scope.standardChanges = function () {
+			// alert($scope.selectedName);
+			for (let i = 0; i < $scope.names.length; i++) {
+				if ($scope.selectedName == $scope.names[i]) {
+					$scope.settings.area[$scope.area].material = $scope.settings.area[$scope.area].materials[i];
+
+					for (let j = 0; j < $scope.settings.area[$scope.area].material.length; j++) {
+						$scope.hascolor.forEach(val => {
+							if($scope.settings.area[$scope.area].material[j].name==val.name){
+								$scope.settings.area[$scope.area].material[j].has=true;
+							}
+						});
+					}
+
+					// $scope.settings.area[$scope.area].material = $scope.settings.area[$scope.area].materials[i];
+					// $scope.settings.area[$scope.area].material.forEach(element => {
+					// 	$scope.settings.area[$scope.area].materials[i].forEach(val => {
+					// 		if (element.name == val.name) {
+					// 			element.has = val.has;
+					// 			if (val.colors) {
+					// 				for (var j = 0; j < val.colors.color.length; j++) {
+					// 					element.colors.color[j].valmin = val.colors.color[j].valmin;
+					// 					element.colors.color[j].valmax = val.colors.color[j].valmax;
+					// 					element.colors.color[j].colorString = val.colors.color[j].colorString;
+					// 					element.colors.color[j].color = val.colors.color[j].color;
+					// 				}
+					// 			}
+					// 		}
+					// 	});
+					// });
+					break;
+				}
+			}
+
+
+		}
+
 		$scope.PDConfig = PDConfig;
 		if (PDTools.getQuery(window.location.href, 'area') == '1')
 			$scope.area = 1;
@@ -231,8 +296,21 @@
 		$scope.settings = PDConfig.default($scope.settings, $scope.area);
 
 		$scope.color = PDTools.clone($scope.settings.area[$scope.area].material_single.color);
+		
+		//记录有多少个颜色
+		$scope.hascolor=[];
+		if($scope.settings.area[$scope.area].material){
+			$scope.settings.area[$scope.area].material.forEach(element => {
+				if(element.has){
+					var temp={"name":element.name,"has":element.has};
+					$scope.hascolor.push(temp);
+				}
+			});
+		}
+
 
 		openColorsSelector($scope);
+		//监控全选
 		$scope.$watch('material_all', function (val, valOld, $scope) {
 			if (val == undefined) return;
 			var area = $scope.area;

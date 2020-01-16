@@ -481,11 +481,11 @@
             shapes = [shape];
 
         var that = this;
-
-        PDTools.showLoading(true, true);
+        // xj add
+        // PDTools.showLoading(true, true);
         setTimeout(function () {
             freshShape(0, function () {
-                PDTools.showLoading(false, true);
+                // PDTools.showLoading(false, true);
                 if (shape)
                     that.autoFit(shape);
                 cb && cb();
@@ -1107,6 +1107,86 @@
         var that = this;
 
         var materielColor = getMaterielColor(shape.names);
+        
+        // xj add
+        function getMaterielColor(dataCol) {
+            var materiel = [];
+            for (var i = 0; i < dataCol.length; i ++){
+                var color = getColor(dataCol[i], i);
+                if (color == false){
+                    var colors = [
+                        0x53261f,
+                        0xfdb933,
+                        0x00a6ac,
+                        0xf15a22,
+                        0xd3c6a6,
+                        0x78cdd1,
+                        0xb4533c,
+                        0xc7a252,
+                        0x008792,
+                        0xf15a22,
+                        0xc1a173,
+                        0x5e7c85
+                    ];
+                    var cl = colors[i % (colors.length)];
+                    color = {name: dataCol[i], show: true, color: cl & 0x00ffffff}
+                }
+
+                var colorString = color.color.toString(16);
+                var padding = '00000000';
+                colorString = padding.substr(0, 6 - colorString.length) + colorString;
+                materiel.push({name: dataCol[i], show:color.show, color: color.color, colorString: colorString});
+            }
+            for (var i in materiel){
+                var found = false;
+                for (var j in that._material){
+                    if (materiel[i].name == that._material[j].name){
+                        found = true;
+                        break;
+                    }
+                }
+                if (found == false)
+                    that._material.push(materiel[i]);
+            }
+            
+            for (var i = dataCol.length - 1; i >= 0; i --){
+                for (var j = 0; j < that._material.length; j ++){
+                    if (dataCol[i] == that._material[j].name){
+                        var temp = that._material[j];
+                        temp.has = true;
+                        that._material.splice(j, 1);
+                        that._material.splice(0, 0, temp);
+                        break;
+                    }
+                }
+            }
+            for (var i in that._material){
+                that._material[i].has = false;
+            }
+            for (var i in that._shapes){
+                for (var j in that._shapes[i].names){
+                    for (var k in that._material){
+                        if (that._shapes[i].names[j] == that._material[k].name){
+                            that._material[k].has = true;
+                        }
+                    }
+                }
+            }
+            
+            return materiel;
+
+            function getColor(name, index) {
+                if (!that._material)
+                    return false;
+                for (var i in that._material) {
+                    if (that._material[i].name == name)
+                        return that._material[i];
+                }
+                return false;
+            }
+        }
+
+
         var count_show = 0;
         for (var i in materielColor){
             if (materielColor[i].show)

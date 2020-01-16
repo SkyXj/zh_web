@@ -1,6 +1,44 @@
 //new Cesium.UrlTemplateImageryProvider();
 
 var dataCount = 0;
+// xj add 专为html定制 *****************************start***********************************
+function test(){
+    //setname
+    AdapterOnCmd({'cmd':'SetName','dev_id':'100','dev_name':'voc走航','data':['TVOC浓度','丁烯浓度']});
+    AdapterOnCmd({'cmd':'SetName','dev_id':'100','dev_name':'voc走航','data':['TVOC浓度']});
+    $.get("js/main/zh_real.json", function (data) {
+        var i=0;
+        var interval=setInterval(function () {
+            i++;
+            // console.log('定时运行：' + i + '次')
+            var point={'cmd':'AddPoint','dev_id':'100','data':{'time':'2020-01-09 13:50:11','lng':'113','lat':'23','values':[700,1500]}};
+            // var point={'cmd':'AddPoint','dev_id':'100','data':{'time':'2020-01-09 13:50:11','lng':'113','lat':'23','values':[700]}};
+            point.data.lng=data[i].lng;
+            point.data.lat=data[i].lat;
+            point.data.time=data[i].time;
+            // point.data.values=[data[i].values[0].value*100];
+            AdapterOnCmd(point);
+            if(i==10){
+                clearInterval(interval);
+            }
+        }, 500)      
+
+        // data.slice(0,5).forEach(element => {
+        //     var point={'cmd':'AddPoint','dev_id':'100','data':{'time':'2020-01-09 13:50:11','lng':'113','lat':'23','values':[113]}};
+        //     point.data.lng=element.lng;
+        //     point.data.lat=element.lat;
+        //     point.data.time=element.time;
+        //     point.data.values=[element.values[0].value*100];
+        //     AdapterOnCmd(point);
+        // });
+    }, "json");
+}
+
+test();
+// xj add 专为html定制 *****************************start***********************************
+
+
+
 function AdapterOnCmd(cmd) {
     setTimeout(action, 200);
     function action() {

@@ -42,8 +42,13 @@ PDConfig = {
         if (settings.area[index].map_zoom == undefined)
             settings.area[index].map_zoom = 10;
         //物质颜色
-        if (!settings.area[index].material)
-            settings.area[index].material = PD_INIT_MATERIAL;
+        if (!settings.area[index].material){
+            settings.area[index].material = PD_INIT_MATERIAL2;
+            settings.area[index].materials=[];
+            settings.area[index].materials.push(PD_INIT_MATERIAL);
+            settings.area[index].materials.push(PD_INIT_MATERIAL2);
+        }
+        
                     
         if (settings.area[index].alpha == undefined)
             settings.area[index].alpha = 90;
@@ -128,6 +133,16 @@ var PD_INIT_MATERIAL = [
         "show": true,
         "color": 42668,
         "colorString": "00a6ac",
+        "threshold":200,
+        "colors":{show:true,color :[
+            {valmin:0,valmax:200,colorString:'4ce600', color:0xff0000},
+            {valmin:200,valmax:400,colorString:'d1ff73', color:0xff0000},
+            {valmin:400,valmax:600,colorString:'e6e600', color:0xff0000},
+            {valmin:600,valmax:1000,colorString:'e69800', color:0xff0000},
+            {valmin:1000,valmax:2000,colorString:'e60000', color:0xff0000},
+            {valmin:2000,valmax:4000,colorString:'c500ff', color:0xff0000},
+            {valmin:4000,valmax:100000,colorString:'4c0073', color:0xff0000},
+        ]},
         "has": false
     }, {
         "name": "丁烷，异丁烷浓度",
@@ -164,6 +179,95 @@ var PD_INIT_MATERIAL = [
         "show": true,
         "color": 5449247,
         "colorString": "53261f",
+        "threshold":200,
+        "colors":{show:true,color :[
+            {valmin:0,valmax:200,colorString:'4ce600', color:0xff0000},
+            {valmin:200,valmax:400,colorString:'d1ff73', color:0xff0000},
+            {valmin:400,valmax:600,colorString:'e6e600', color:0xff0000},
+            {valmin:600,valmax:1000,colorString:'e69800', color:0xff0000},
+            {valmin:1000,valmax:2000,colorString:'e60000', color:0xff0000},
+            {valmin:2000,valmax:4000,colorString:'c500ff', color:0xff0000},
+            {valmin:4000,valmax:100000,colorString:'4c0073', color:0xff0000},
+        ]},
+        "has": false
+    }
+];
+
+
+var PD_INIT_MATERIAL2 = [
+    {
+        "name": "甲硫醇浓度",
+        "show": true,
+        "color": 5449247,
+        "colorString": "53261f",
+        "has": false
+    }, {
+        "name": "1,3-丁二烯浓度",
+        "show": true,
+        "color": 16628019,
+        "colorString": "fdb933",
+        "has": false
+    }, {
+        "name": "丁烯浓度",
+        "show": true,
+        "color": 42668,
+        "colorString": "00a6ac",
+        "threshold":200,
+        "colors":{show:true,color :[
+            {valmin:0,valmax:200,colorString:'4ce600', color:0xff0000},
+            {valmin:200,valmax:400,colorString:'d1ff73', color:0xff0000},
+            {valmin:400,valmax:600,colorString:'e6e600', color:0xff0000},
+            {valmin:600,valmax:1000,colorString:'e69800', color:0xff0000},
+            {valmin:1000,valmax:2000,colorString:'e60000', color:0xff0000},
+            {valmin:2000,valmax:4000,colorString:'c500ff', color:0xff0000},
+            {valmin:4000,valmax:100000,colorString:'4c0073', color:0xff0000},
+        ]},
+        "has": false
+    }, {
+        "name": "丁烷，异丁烷浓度",
+        "show": true,
+        "color": 15817250,
+        "colorString": "f15a22",
+        "has": false
+    }, {
+        "name": "甲硫醚、乙硫醇浓度",
+        "show": true,
+        "color": 13878950,
+        "colorString": "d3c6a6",
+        "has": false
+    }, {
+        "name": "异戊二烯浓度",
+        "show": true,
+        "color": 7917009,
+        "colorString": "78cdd1",
+        "has": false
+    }, {
+        "name": "戊烯浓度",
+        "show": true,
+        "color": 11817788,
+        "colorString": "b4533c",
+        "has": false
+    }, {
+        "name": "戊烷、异戊烷浓度",
+        "show": true,
+        "color": 13083218,
+        "colorString": "c7a252",
+        "has": false
+    }, {
+        "name": "TVOC浓度",
+        "show": true,
+        "color": 5449247,
+        "colorString": "53261f",
+        "threshold":0,
+        "colors":{show:true,color :[
+            {valmin:0,valmax:200,colorString:'4ce600', color:0xff0000},
+            {valmin:200,valmax:400,colorString:'d1ff73', color:0xff0000},
+            {valmin:400,valmax:600,colorString:'e6e600', color:0xff0000},
+            {valmin:600,valmax:1000,colorString:'e69800', color:0xff0000},
+            {valmin:1000,valmax:2000,colorString:'e60000', color:0xff0000},
+            {valmin:2000,valmax:4000,colorString:'c500ff', color:0xff0000},
+            {valmin:4000,valmax:100000,colorString:'4c0073', color:0xff0000},
+        ]},
         "has": false
     }
 ];

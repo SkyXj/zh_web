@@ -81,8 +81,10 @@ function Main_InitButtons($scope) {
             icon: 'images/color2.png',
             title: '颜色设置',
             src: 'settings_material.html?area='+$scope.area,
-            width: 480,
-            height: 400,
+            // width: 480,
+            width: 1000,
+            // height: 400,
+            height: 650,
         };
         return;
     }
