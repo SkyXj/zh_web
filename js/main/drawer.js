@@ -1135,7 +1135,7 @@
                 var colorString = color.color.toString(16);
                 var padding = '00000000';
                 colorString = padding.substr(0, 6 - colorString.length) + colorString;
-                materiel.push({name: dataCol[i], show:color.show, color: color.color, colorString: colorString});
+                materiel.push({name: dataCol[i], show:color.show, color: color.color, colorString: colorString,threshold:color.threshold,colors:color.colors});
             }
             for (var i in materiel){
                 var found = false;
@@ -1365,8 +1365,11 @@
                             continue;
                         if (chart == PDConfig.const.SHAPE_DOT){
                             var colorString = materielColor[i].colorString;
-                            if (count_show == 1)
-                                colorString = getMaterielSingleColor(data[index].val[i], colorString);
+                            if (count_show == 1){
+                                // xj add use
+                                // colorString = getMaterielSingleColor(data[index].val[i], colorString);
+                                colorString = getMaterielSingleColor(data[index].val[i]-materielColor[i].threshold, colorString,materielColor[i].colors.color);
+                            }
 
                             if (colorString.indexOf('#') != 0)
                                 colorString = '#' + colorString;
@@ -1414,8 +1417,11 @@
                             h += data[index].val[i];
                         }else{
                             var colorString = materielColor[i].colorString;
-                            if (count_show == 1)
-                                colorString = getMaterielSingleColor(data[index].val[i], colorString);
+                            if (count_show == 1){
+                                // xj add use
+                                // colorString = getMaterielSingleColor(data[index].val[i], colorString);
+                                colorString = getMaterielSingleColor(data[index].val[i]-materielColor[i].threshold, colorString,materielColor[i].colors.color);
+                            }
 
                             if (colorString.indexOf('#') != 0)
                                 colorString = '#' + colorString;
@@ -1640,21 +1646,42 @@
                     return false;
                 }
             }
-            function getMaterielSingleColor(val, colorOld) {
+            function getMaterielSingleColor(val, color,colors) {
+                val=val>0?val:0;
+                // val=val+200;
+                var colorOld=color.colorString;
                 if (!that._material_single || !that._material_single.show){
                     that._updateMaterial(undefined);
                     return colorOld;
                 }
-                var colorString = that._material_single.color[0].colorString;
-                for (var i = that._material_single.color.length - 1; i >= 0; i --){
-                    if (val >= that._material_single.color[i].val){
-                        colorString = that._material_single.color[i].colorString;
+                // var colorString = that._material_single.color[0].colorString;
+                // for (var i = that._material_single.color.length - 1; i >= 0; i --){
+                //     if (val >= that._material_single.color[i].val){
+                //         colorString = that._material_single.color[i].colorString;
+                //         break;
+                //     }
+
+                // }
+
+                //xj add use
+                var colorString=colors[0].colorString;
+                for (var i = colors.length - 1; i >= 0; i --){
+                    if (val >= colors[i].valmin){
+                        colorString = colors[i].colorString;
                         break;
                     }
 
                 }
                 that._updateMaterial(undefined);
                 return colorString;
+            }
+
+            function getTopSingleColor(val,materiel){
+                if(val>materiel.threshold){
+                    return val-materiel.threshold;
+                }else{
+                    return 0;
+                }
             }
         }
     },

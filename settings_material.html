@@ -245,7 +245,8 @@
 
 		//xj add 有效代码
 		$scope.names = ["标准1", "标准2"];
-		$scope.selectedName=$scope.names[0];
+		var material_index=window.localStorage["material_index"]==undefined?0:window.localStorage["material_index"];
+		$scope.selectedName=$scope.names[material_index];
 
    		$scope.standardChanges = function () {
 			// alert($scope.selectedName);
@@ -280,7 +281,7 @@
 					break;
 				}
 			}
-
+			openColorsSelector($scope);
 
 		}
 
@@ -294,6 +295,7 @@
 
 		$scope.settings = PDCommon.getData('settings');
 		$scope.settings = PDConfig.default($scope.settings, $scope.area);
+		
 
 		$scope.color = PDTools.clone($scope.settings.area[$scope.area].material_single.color);
 		
@@ -304,6 +306,16 @@
 				if(element.has){
 					var temp={"name":element.name,"has":element.has};
 					$scope.hascolor.push(temp);
+				}
+			});
+		}
+		//回显
+		$scope.settings.area[$scope.area].material = $scope.settings.area[$scope.area].materials[material_index];
+		for (let j = 0; j < $scope.settings.area[$scope.area].material.length; j++) {
+			$scope.hascolor.forEach(val => {
+				if ($scope.settings.area[$scope.area].material[j].name == val.name) {
+					$scope.settings.area[$scope.area].material[j].has = true;
+					// $scope.settings.area[$scope.area].material[j].show = true;
 				}
 			});
 		}
@@ -328,6 +340,18 @@
 				return;
 			}
 			var material = $scope.settings.area[$scope.area].material;
+
+			//修改storage
+			for (let i = 0; i < $scope.names.length; i++) {
+				if ($scope.selectedName == $scope.names[i]) {
+					window.localStorage["material_index"]=i;
+					$scope.settings.area[$scope.area].materials[i]=material;
+					window.localStorage["settings"] = JSON.stringify($scope.settings);
+				}
+			}
+			
+
+
 			var count = 0;
 			var count_has = 0;
 			for (var i = 0; i < material.length; i ++){
@@ -351,6 +375,7 @@
 			}
 			var settings = {area: []};
 			settings.area[$scope.area] = {
+				materials:$scope.settings.area[$scope.area].materials,
 				material: $scope.settings.area[$scope.area].material,
 				material_single: $scope.settings.area[$scope.area].material_single,
 				alpha: $scope.settings.area[$scope.area].alpha

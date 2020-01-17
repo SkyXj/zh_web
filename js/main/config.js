@@ -44,9 +44,12 @@ PDConfig = {
         //物质颜色
         if (!settings.area[index].material){
             settings.area[index].material = PD_INIT_MATERIAL2;
-            settings.area[index].materials=[];
-            settings.area[index].materials.push(PD_INIT_MATERIAL);
-            settings.area[index].materials.push(PD_INIT_MATERIAL2);
+            if(!settings.area[index].materials||settings.area[index].materials.length<=0){
+                settings.area[index].materials=[];
+                settings.area[index].materials.push(PD_INIT_MATERIAL);
+                settings.area[index].materials.push(PD_INIT_MATERIAL2);
+            }
+            
         }
         
                     

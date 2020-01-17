@@ -11,7 +11,7 @@ function test(){
         var interval=setInterval(function () {
             i++;
             // console.log('定时运行：' + i + '次')
-            var point={'cmd':'AddPoint','dev_id':'100','data':{'time':'2020-01-09 13:50:11','lng':'113','lat':'23','values':[700,1500]}};
+            var point={'cmd':'AddPoint','dev_id':'100','data':{'time':'2020-01-09 13:50:11','lng':'113','lat':'23','values':[1100,1500]}};
             // var point={'cmd':'AddPoint','dev_id':'100','data':{'time':'2020-01-09 13:50:11','lng':'113','lat':'23','values':[700]}};
             point.data.lng=data[i].lng;
             point.data.lat=data[i].lat;
