@@ -309,12 +309,10 @@
 				}
 			   var rowSave = {time:t,pos:{lng:lng,lat:lat},val:[]};
                for (var j in values){
-               rowSave.val[j] = values[j];
+                    rowSave.val[j] = values[j];
                }
 			   var str = JSON.stringify(rowSave);
                var data1 = JSON.parse(str);
-               
-
                this._xjshapes[i].dataSave.push(data1);
                break;
             }
