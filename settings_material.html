@@ -14,7 +14,7 @@
 	<script src="./js/tools.js"></script>
 	<script src="./js/main/config.js"></script>
 
-	<!-- xj add -->
+	<!-- xj add html -->
 	<script src="./js/PDCommon.js"></script>
 	<script src="./js/PDInterface.js"></script>
 
@@ -171,13 +171,16 @@
 	<div class="flex-line" style="padding: 0 10px">
 		<select ng-model="selectedName" ng-options="x for x in names" ng-change="standardChanges()">
 		</select>
+
+		<input type="text" style="margin-left: 20px" ng-model="searchKeyWord" ng-change="search()" placeholder="请输入物质名称"/>
+		<!-- <button ng-click="search()">搜索</button> -->
 	</div>
 
 
 	<!-- <div class="flex-line" style="padding: 0 10px"><input class="material_sel all_sel" ng-model="material_all" type="checkbox" /><p>全选</p></div> -->
 	<div class="content">
 		<ul >
-			<li ng-repeat="item in settings.area[area].material" class="material flex-line" ng-show="item.has">
+			<li ng-repeat="item in settings.area[area].material" class="material flex-line" ng-show="item.has&&item.search">
 				<input class="material_sel" type="checkbox" ng-disabled="item.has==false" ng-model="item.show"/>
 				<p class="title space" ng-bind="item.name"></p>
 				阈值：<input class="title" style="width: 50px;margin-right: 300px;" ng-model="item.threshold" type="text"></input>
@@ -243,8 +246,30 @@
 	var app = angular.module('settings', []);
 	app.controller('all', function ($scope){
 
-		//xj add 有效代码
-		$scope.names = ["标准1", "标准2"];
+		$scope.searchKeyWord="";
+
+		$scope.search=function(){
+			// if($scope.searchKeyWord==""){
+			// 	// alert("请输入物质名称");
+			// 	return;
+			// }
+			for (let j = 0; j < $scope.settings.area[$scope.area].material.length; j++) {
+				if ($scope.searchKeyWord == "") {
+					$scope.settings.area[$scope.area].material[j].search = true;
+					continue;
+				}
+				if ($scope.settings.area[$scope.area].material[j].name.indexOf($scope.searchKeyWord) >= 0) {
+					$scope.settings.area[$scope.area].material[j].search = true;
+				} else {
+					$scope.settings.area[$scope.area].material[j].search = false;
+				}
+			}
+			// alert($scope.searchKeyWord);
+		}
+
+		//xj add use
+		$scope.names = JSON.parse(window.localStorage["standardNames"]);
+
 		var material_index=window.localStorage["material_index"]==undefined?0:window.localStorage["material_index"];
 		$scope.selectedName=$scope.names[material_index];
 

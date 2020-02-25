@@ -481,7 +481,7 @@
             shapes = [shape];
 
         var that = this;
-        // xj add
+        // xj add html
         // PDTools.showLoading(true, true);
         setTimeout(function () {
             freshShape(0, function () {
@@ -1108,7 +1108,7 @@
 
         var materielColor = getMaterielColor(shape.names);
         
-        // xj add
+        // xj add html
         function getMaterielColor(dataCol) {
             var materiel = [];
             for (var i = 0; i < dataCol.length; i ++){
@@ -1647,6 +1647,9 @@
                 }
             }
             function getMaterielSingleColor(val, color,colors) {
+                if(val<0){
+                    return "4ce600";
+                }
                 val=val>0?val:0;
                 // val=val+200;
                 var colorOld=color.colorString;
