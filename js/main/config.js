@@ -45,21 +45,34 @@ PDConfig = {
             settings.area[index].map_zoom = 10;
         //物质颜色
         if (!settings.area[index].material){
-            var standardNames=[];
+            // var standardNames=[];
             settings.area[index].material = PD_INIT_MATERIAL2;
-            if(!settings.area[index].materials||settings.area[index].materials.length<=0){
-                settings.area[index].materials=[];
-                for (let i = 0; i < PD_INIT_MATERIALS.length; i++) {
-                    const material = PD_INIT_MATERIALS[i].material;
-                    settings.area[index].materials.push(material);
-                    const name = PD_INIT_MATERIALS[i].name;
-                    standardNames.push(name);
-                }
-            }
+            // if(!settings.area[index].materials||settings.area[index].materials.length<=0){
+            //     settings.area[index].materials=[];
+            //     for (var i = 0; i < PD_INIT_MATERIALS.length; i++) {
+            //         const material = PD_INIT_MATERIALS[i].material;
+            //         settings.area[index].materials.push(material);
+            //         const name = PD_INIT_MATERIALS[i].name;
+            //         standardNames.push(name);
+            //     }
+            // }
             // window.localStorage["settings"]=JSON.stringify(settings);
             // window.localStorage["standardNames"]=JSON.stringify(standardNames);
         }
-        
+        if(!settings.area[index].materials){
+            settings.area[index].materials=[];
+            for (var i = 0; i < PD_INIT_MATERIALS.length; i++) {
+                var material = PD_INIT_MATERIALS[i].material;
+                settings.area[index].materials.push(material);
+            }
+        }
+        if(!settings.area[index].standardNames){
+            settings.area[index].standardNames=[];
+            for (var i = 0; i < PD_INIT_MATERIALS.length; i++) {
+                var name = PD_INIT_MATERIALS[i].name;
+                settings.area[index].standardNames.push(name);
+            }
+        }
                     
         if (settings.area[index].alpha == undefined)
             settings.area[index].alpha = 90;
@@ -153,7 +166,7 @@ var PD_INIT_MATERIAL = [
         "search": true,
         "threshold":200,
         "colors":{show:true,color :[
-            {valmin:0,valmax:200,colorString:'4ce600', color:0xff0000},
+            {valmin:0,valmax:200,colorString:'', color:0xff0000},
             {valmin:200,valmax:400,colorString:'d1ff73', color:0xff0000},
             {valmin:400,valmax:600,colorString:'e6e600', color:0xff0000},
             {valmin:600,valmax:1000,colorString:'e69800', color:0xff0000},

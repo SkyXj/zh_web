@@ -4,24 +4,26 @@ var dataCount = 0;
 // xj add html 专为html测试 *****************************start***********************************
 function test(){
     //setname
-    AdapterOnCmd({'cmd':'SetName','dev_id':'100','dev_name':'voc走航','data':['TVOC浓度','丁烯浓度','甲硫醇浓度']});
-    // AdapterOnCmd({'cmd':'SetName','dev_id':'100','dev_name':'voc走航','data':['TVOC浓度']});
+    // AdapterOnCmd({'cmd':'SetName','dev_id':'100','dev_name':'voc走航','data':['TVOC浓度','丁烯浓度','甲硫醇浓度']});
+    // AdapterOnCmd({'cmd':'SetName','dev_id':'100','dev_name':'voc走航','data':['TVOC浓度','丁烯浓度']});
+    AdapterOnCmd({'cmd':'SetName','dev_id':'100','dev_name':'voc走航','data':['TVOC浓度']});
     $.get("js/main/zh_real.json", function (data) {
         var i=0;
         var interval=setInterval(function () {
             i++;
             // console.log('定时运行：' + i + '次')
-            var point={'cmd':'AddPoint','dev_id':'100','data':{'time':'2020-01-09 13:50:11','lng':'113','lat':'23','values':[1100,1500,250]}};
-            // var point={'cmd':'AddPoint','dev_id':'100','data':{'time':'2020-01-09 13:50:11','lng':'113','lat':'23','values':[700]}};
+            // var point={'cmd':'AddPoint','dev_id':'100','data':{'time':'2020-01-09 13:50:11','lng':'113','lat':'23','values':[1100,1500,250]}};
+            var point={'cmd':'AddPoint','dev_id':'100','data':{'time':'2020-01-09 13:50:11','lng':'113','lat':'23','values':[700]}};
+            // var point={'cmd':'AddPoint','dev_id':'100','data':{'time':'2020-01-09 13:50:11','lng':'113','lat':'23','values':[1100,1500]}};
             point.data.lng=data[i].lng;
             point.data.lat=data[i].lat;
             point.data.time=data[i].time;
             // point.data.values=[data[i].values[0].value*100];
             AdapterOnCmd(point);
-            if(i==10){
+            if(i==3){
                 clearInterval(interval);
             }
-        }, 500)      
+        }, 500);
 
         // data.slice(0,5).forEach(element => {
         //     var point={'cmd':'AddPoint','dev_id':'100','data':{'time':'2020-01-09 13:50:11','lng':'113','lat':'23','values':[113]}};

@@ -245,15 +245,23 @@
 	}
 	var app = angular.module('settings', []);
 	app.controller('all', function ($scope){
+		$scope.PDConfig = PDConfig;
+		if (PDTools.getQuery(window.location.href, 'area') == '1')
+			$scope.area = 1;
+		else
+			$scope.area = 0;
+
+		$scope.dialog = {show: false};
+		$scope.settings = PDCommon.getData('settings');
+
+		$scope.settings = PDConfig.default($scope.settings, $scope.area);
+
+		$scope.color = PDTools.clone($scope.settings.area[$scope.area].material_single.color);
 
 		$scope.searchKeyWord="";
 
 		$scope.search=function(){
-			// if($scope.searchKeyWord==""){
-			// 	// alert("请输入物质名称");
-			// 	return;
-			// }
-			for (let j = 0; j < $scope.settings.area[$scope.area].material.length; j++) {
+			for (var j = 0; j < $scope.settings.area[$scope.area].material.length; j++) {
 				if ($scope.searchKeyWord == "") {
 					$scope.settings.area[$scope.area].material[j].search = true;
 					continue;
@@ -268,18 +276,19 @@
 		}
 
 		//xj add use
-		$scope.names = JSON.parse(window.localStorage["standardNames"]);
+		$scope.names = $scope.settings.area[$scope.area].standardNames;
 
-		var material_index=window.localStorage["material_index"]==undefined?0:window.localStorage["material_index"];
+		var material_index=localStorage["material_index"]==undefined?0:localStorage["material_index"];
+		
 		$scope.selectedName=$scope.names[material_index];
 
    		$scope.standardChanges = function () {
 			// alert($scope.selectedName);
-			for (let i = 0; i < $scope.names.length; i++) {
+			for (var i = 0; i < $scope.names.length; i++) {
 				if ($scope.selectedName == $scope.names[i]) {
 					$scope.settings.area[$scope.area].material = $scope.settings.area[$scope.area].materials[i];
 
-					for (let j = 0; j < $scope.settings.area[$scope.area].material.length; j++) {
+					for (var j = 0; j < $scope.settings.area[$scope.area].material.length; j++) {
 						$scope.hascolor.forEach(val => {
 							if($scope.settings.area[$scope.area].material[j].name==val.name){
 								$scope.settings.area[$scope.area].material[j].has=true;
@@ -310,19 +319,7 @@
 
 		}
 
-		$scope.PDConfig = PDConfig;
-		if (PDTools.getQuery(window.location.href, 'area') == '1')
-			$scope.area = 1;
-		else
-			$scope.area = 0;
-
-		$scope.dialog = {show: false};
-
-		$scope.settings = PDCommon.getData('settings');
-		$scope.settings = PDConfig.default($scope.settings, $scope.area);
 		
-
-		$scope.color = PDTools.clone($scope.settings.area[$scope.area].material_single.color);
 		
 		//记录有多少个颜色
 		$scope.hascolor=[];
@@ -336,7 +333,7 @@
 		}
 		//回显
 		$scope.settings.area[$scope.area].material = $scope.settings.area[$scope.area].materials[material_index];
-		for (let j = 0; j < $scope.settings.area[$scope.area].material.length; j++) {
+		for (var j = 0; j < $scope.settings.area[$scope.area].material.length; j++) {
 			$scope.hascolor.forEach(val => {
 				if ($scope.settings.area[$scope.area].material[j].name == val.name) {
 					$scope.settings.area[$scope.area].material[j].has = true;
@@ -347,6 +344,7 @@
 
 
 		openColorsSelector($scope);
+		
 		//监控全选
 		$scope.$watch('material_all', function (val, valOld, $scope) {
 			if (val == undefined) return;
@@ -367,7 +365,7 @@
 			var material = $scope.settings.area[$scope.area].material;
 
 			//修改storage
-			for (let i = 0; i < $scope.names.length; i++) {
+			for (var i = 0; i < $scope.names.length; i++) {
 				if ($scope.selectedName == $scope.names[i]) {
 					window.localStorage["material_index"]=i;
 					$scope.settings.area[$scope.area].materials[i]=material;
